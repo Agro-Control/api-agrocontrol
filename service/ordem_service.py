@@ -1,39 +1,39 @@
 from connection.postgres import Database
 from connection.mongo import Mongo
+from errors import EventError
 
 class OrdemService:
     
     def busca_ordem_maquina(self, id_maquina: int): 
-        ordem = None
-        with Database() as conn:
-            if conn:
-                with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-                    sql = """select 
-                                os.id_ordem_servico,
-                                os.data_inicio,
-                                os.status,
-                                os.velocidade_minima,
-                                os.velocidade_maxima,
-                                os.rpm_minimo,
-                                os.rpm_maximo 
-                            from ordem_servico as os where os.id_maquina_pk = %s and os.status='A';
-                        """
-                
-                    #quando model estiver pronta usar aqui
-                    cursor.execute(sql, (id_maquina,), prepare=True)
-                
-                    ordem = cursor.fetchone()
-                
-                    if not ordem:
-                        return ordem
+        ordem = {}
 
-                    # {'id_ordem_servico': 1, 'data_inicio': datetime.datetime(2023, 11, 11, 8, 0), 'data_fim': None, 'status': 'A', 'velocidade_minima': 10.5, 
-                    # 'velocidade_maxima': 20.5, 'rpm_minimo': 1000.0, 'rpm_maximo': 2000.0, 'id_maquina_pk': 1}
-                    
-                    #gambiarra temporaria para mostrar os campos
-                    ordem["data_inicio"] = ordem["data_inicio"].strftime("%Y-%m-%d %H:%M:%S")
+        with Database() as conn: 
+            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+                sql = """select 
+                            os.id_ordem_servico,
+                            os.data_inicio,
+                            os.status,
+                            os.velocidade_minima,
+                            os.velocidade_maxima,
+                            os.rpm_minimo,
+                            os.rpm_maximo 
+                        from ordem_servico as os where os.id_maquina_pk = %s and os.status='A';
+                    """
+            
+                #quando model estiver pronta usar aqui
+                cursor.execute(sql, (id_maquina,), prepare=True)
+            
+                ordem = cursor.fetchone()
+            
+                if not ordem:
+                    return ordem
 
-        
+                # {'id_ordem_servico': 1, 'data_inicio': datetime.datetime(2023, 11, 11, 8, 0), 'data_fim': None, 'status': 'A', 'velocidade_minima': 10.5, 
+                # 'velocidade_maxima': 20.5, 'rpm_minimo': 1000.0, 'rpm_maximo': 2000.0, 'id_maquina_pk': 1}
+                
+                #gambiarra temporaria para mostrar os campos
+                ordem["data_inicio"] = ordem["data_inicio"].strftime("%Y-%m-%d %H:%M:%S")
+ 
         return ordem
     
     async def busca_eventos_ordem(self,id_ordem: int):
@@ -54,9 +54,8 @@ class OrdemService:
 
     async def insere_evento(self, evento):
         async with Mongo() as client:
-
             try:
                 return await client.tcc.eventos.insert_one(evento)
             except Exception as ex:
-                print(f"Deu ruim: {ex}")
+                raise EventError(ex)
 

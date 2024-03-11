@@ -1,13 +1,19 @@
 from motor.motor_asyncio import AsyncIOMotorClient
+from errors import DatabaseError
+
+def get_conn_str():
+    return "mongodb://mongodb:27017/"
 
 class Mongo:
     def __init__(self) -> None:
-        self.uri = "mongodb://localhost:27017/"
+        self._uri = get_conn_str()
 
     async def __aenter__(self):
-        self.client = AsyncIOMotorClient(self.uri, )
-        return self.client
+        try:
+            self.client = AsyncIOMotorClient(self._uri, )
+            return self.client
+        except Exception as e:
+            raise DatabaseError(e)
 
     async def __aexit__(self, exc_type, exc, tb):
-        print("Fechou conn")
         self.client.close()
