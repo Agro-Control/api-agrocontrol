@@ -5,11 +5,11 @@ bla bla bla api for project agro control.
 Obs: This project was built for using with docker, if you not want to use it you will need to change the connections parameters.
 
 ## Requirements
-[Python](https://www.python.org/) version 3.8+
-[PIP](https://pip.pypa.io/en/stable/installation/)
-[Docker](https://www.docker.com/) (optional)
-[Postgres](https://www.postgresql.org/) version 15.6+ (optional)
-[Mongo](https://www.mongodb.com/pt-br) version 6.0+ (optional)
+[Python](https://www.python.org/) version 3.8+  
+[PIP](https://pip.pypa.io/en/stable/installation/)    
+[Docker](https://www.docker.com/) (optional)  
+[Postgres](https://www.postgresql.org/) version 15.6+ (optional)  
+[Mongo](https://www.mongodb.com/pt-br) version 6.0+ (optional)  
 
 ## Getting Started
 First, make sure you have all the requirements installed, otherwise you may encounter some problems.
