@@ -6,7 +6,7 @@ CREATE TABLE Gestor (
 	status CHAR DEFAULT 'A',
     email VARCHAR(60),
     data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	gestor_criacao_id INT,
+	gestor_id INT,
 	unidade_id INT
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE Empresa (
     telefone_responsavel VARCHAR(11),
     email_responsavel VARCHAR(60),
     nome_responsavel VARCHAR(60),
-    gestor_criacao_id INT
+    gestor_id INT
 );
 
 CREATE TABLE Unidade(
@@ -45,7 +45,7 @@ CREATE TABLE Unidade(
     status CHAR DEFAULT 'A',
 	data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     empresa_id INT,
-    gestor_criacao_id INT
+    gestor_id INT
 );
 
 
@@ -107,15 +107,15 @@ CREATE TABLE Ordem_Servico_Operador(
 );
 
 ALTER TABLE Gestor
-ADD CONSTRAINT fk_gestor_gestor_criacao_id FOREIGN KEY (gestor_criacao_id) REFERENCES Gestor(id),
+ADD CONSTRAINT fk_gestor_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
 ADD CONSTRAINT fk_gestor_unidade_id FOREIGN KEY (unidade_id) REFERENCES Unidade(id);
 
 ALTER TABLE Empresa
-ADD CONSTRAINT fk_empresa_gestor_criacao_id FOREIGN KEY (gestor_criacao_id) REFERENCES Gestor(id);
+ADD CONSTRAINT fk_empresa_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id);
 
 ALTER TABLE Unidade
 ADD CONSTRAINT fk_unidade_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id),
-ADD CONSTRAINT fk_unidade_gestor_criacao_id FOREIGN KEY (gestor_criacao_id) REFERENCES Gestor(id);
+ADD CONSTRAINT fk_unidade_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id);
 
 ALTER TABLE Operador
 ADD CONSTRAINT fk_operador_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
@@ -146,11 +146,11 @@ INSERT INTO Gestor (cpf, nome, telefone, status, email)
 VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com');
 
 -- Inserir uma empresa
-INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_criacao_id)
+INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id)
 VALUES ('Empresa Exemplo', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', '41999999999', 'responsavel@example.com', 'Responsável', 1);
 
 -- Inserir duas unidades
-INSERT INTO Unidade (nome, cnpj, cep, estado, cidade, bairro, logradouro, status, empresa_id, gestor_criacao_id)
+INSERT INTO Unidade (nome, cnpj, cep, estado, cidade, bairro, logradouro, status, empresa_id, gestor_id)
 VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Indutrial', 'Cyro Correia Pereira','A', 1, 1),
        ('Unidade 2', '08292207000199', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 'A', 1, 1);
 
