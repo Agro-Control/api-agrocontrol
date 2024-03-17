@@ -1,5 +1,7 @@
+from typing import Dict, List
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
+from model.ordem_de_servico_model import OrdemServico
 from service.ordem_service import OrdemService
 from errors import ApiExceptionHandler
 
@@ -14,20 +16,19 @@ async def generic_exception_handler(request, exc):
 async def root():
     return {"message": "Hello word"}
 
-
-@app.get("/ordem/{id_maquina}")
-def maquina(id_maquina: int):
+@app.get("/ordem/maquina/{id_maquina}/ativa")
+def ordem_maquina_ativa(id_maquina: int):
     
     if not id_maquina:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
 
     ordem_service = OrdemService()
-    response = ordem_service.busca_ordem_maquina(id_maquina)
-
-    if not response:
+    response = ordem_service.busca_ordem_ativa_maquina(id_maquina)
+    
+    if not response or isinstance(response, Dict):
         return JSONResponse(status_code=404, content={"error": "Ordem de servico não encontrada"})
     
-    return JSONResponse(status_code=200, content=response)
+    return JSONResponse(status_code=200, content=response.dict())
 
 
 @app.get("/eventos/{id_ordem}")
@@ -53,5 +54,4 @@ async def eventos(request: Request):
     ordem_service = OrdemService()
     await ordem_service.insere_evento(data)
     return Response(status_code=204)
-
 

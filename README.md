@@ -33,5 +33,5 @@ Obs: uvicorn is supported only on Linux/Mac distro, to run on Windows please use
 
 ## Documentation
 
-This api have two documentation, located in ```/docs``` or ```/redoc```
+This api have two documentation, located in ```/docs``` or ```/redoc``` endpoints
 
