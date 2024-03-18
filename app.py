@@ -7,6 +7,8 @@ from service.ordem_service import OrdemService
 from errors import ApiExceptionHandler
 from service.unidade_service import UnidadeService
 from pydantic import BaseModel
+from model.empresa_model import Empresa
+from service.empresa_service import EmpresaService
 
 app = FastAPI()
 
@@ -104,7 +106,6 @@ def atualiza_unidade(unidade: Unidade):
 
     return response
 
-
 @app.post("/eventos")
 async def eventos(request: Request):
     data = await request.json()
@@ -116,3 +117,60 @@ async def eventos(request: Request):
     await ordem_service.insere_evento(data)
     return Response(status_code=204)
 
+@app.get("/empresas/{id_empresa}", response_model=Empresa)
+def busca_empresa(id_empresa: int)-> Empresa:
+    
+    if not id_empresa:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    empresa_service = EmpresaService()
+
+    response = empresa_service.buscar_empresa(id_empresa)
+    
+    if not response or isinstance(response, Dict):
+        return JSONResponse(status_code= 404, content={"error": "Empresa não encontrada"})
+
+    return response
+
+
+@app.get("/empresas")
+def busca_empresas(status: str = Query(None, description="Status da Empresa"),
+                   codigo: str = Query(None, description= "Nome/Codigo da Empresa")):
+
+    empresa_service = EmpresaService()
+
+    print(f"Codigo: {codigo}")
+    print(f"Status: {status}")
+    response = empresa_service.buscar_empresas(status=status,codigo=codigo)
+
+    if not response:
+        return JSONResponse(status_code= 404, content={"error": "Empresas não encontradas"})
+
+    return {"empresas": response}
+ 
+@app.post("/empresas")
+def inserir_empresa(empresa: Empresa):
+    
+    if not empresa:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    empresa_service = EmpresaService()
+    
+    
+    empresa_service.inserir_empresa(empresa)
+    
+    return Response(status_code=201)
+
+@app.put("/empresas")
+def atualiza_empresa(empresa: Empresa):
+
+    if not empresa or not empresa.id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    empresa_service = EmpresaService()
+    
+    response = empresa_service.altera_empresa(empresa)
+    if not response:
+        return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})
+
+    return response
