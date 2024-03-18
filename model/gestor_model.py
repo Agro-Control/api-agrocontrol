@@ -1,21 +1,19 @@
-class Gestor:
-    def __init__(this, id, cpf, email, data_contratacao, status, nome, telefone, gestor_id=None):
-        this.id = id
-        this.cpf = cpf
-        this.email = email
-        this.data_contratacao = data_contratacao
-        this.status = status
-        this.nome = nome
-        this.telefone = telefone
-        this.gestor_id = gestor_id
+from pydantic import BaseModel
+from datetime import datetime
 
-    def gestor_gestor(this, gestor_superior_id):
-        this.gestor_id = gestor_superior_id
+class Gestor(BaseModel):
+    id: int | None = None
+    cpf: str | None = None
+    nome: str | None = None
+    telefone: str | None = None
+    status:  str | None = None
+    email:  str | None = None
+    data_contratacao:  datetime | None = None
+    gestor_id: int | None = None
+    unidade_id: int | None = None
+
 
 # Exemplo de uso:
-gestor1 = Gestor(1, "12345678900", "gestor1@email.com", "2024-01-01", "Ativo", "Gestor 1", "987654321")
-gestor2 = Gestor(2, "98765432100", "gestor2@email.com", "2024-02-01", "Ativo", "Gestor 2", "123456789")
-
-# Definindo gestor superior para gestor2 (gestor1 neste caso)
-gestor2.gestor_gestor(gestor1.id)
+#gestor1 = Gestor(1, "12345678900", "gestor1@email.com", "2024-01-01", "Ativo", "Gestor 1", "987654321")
+#gestor2 = Gestor(2, "98765432100", "gestor2@email.com", "2024-02-01", "Ativo", "Gestor 2", "123456789")
 
