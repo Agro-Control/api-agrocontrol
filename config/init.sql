@@ -4,15 +4,14 @@ CREATE TABLE Gestor (
     nome VARCHAR(60),
     telefone VARCHAR(14),
 	status CHAR DEFAULT 'A',
-    email VARCHAR(60),
     data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	gestor_id INT,
 	unidade_id INT
 );
 
-
 CREATE TABLE Empresa (
     id SERIAL PRIMARY KEY,
+	is_grupo_empresarial BOOLEAN DEFAULT FALSE,
     nome VARCHAR(60),
     cnpj VARCHAR(14),
     telefone VARCHAR(11),
@@ -52,7 +51,6 @@ CREATE TABLE Unidade(
 CREATE TABLE Operador (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100),
-    email VARCHAR(255),
     matricula VARCHAR(20),
 	cpf VARCHAR(11),
 	status CHAR DEFAULT 'A',
@@ -106,6 +104,17 @@ CREATE TABLE Ordem_Servico_Operador(
 	id_operador INT
 );
 
+CREATE TYPE Tipo_Usuario AS ENUM ('Administrador', 'Gestor', 'Operador');
+
+CREATE TABLE Usuario (
+    id SERIAL PRIMARY KEY,
+	id_usuario VARCHAR(20), 
+    nome VARCHAR(100),
+    email VARCHAR(255),
+    senha VARCHAR(32),
+    tipo_usuario Tipo_Usuario
+);
+
 ALTER TABLE Gestor
 ADD CONSTRAINT fk_gestor_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
 ADD CONSTRAINT fk_gestor_unidade_id FOREIGN KEY (unidade_id) REFERENCES Unidade(id);
@@ -142,12 +151,12 @@ ADD CONSTRAINT fk_ordem_servico_operador_id FOREIGN KEY (id_operador) REFERENCES
 --	Inserindo dados basicos	--
 
 -- Inserir um gestor
-INSERT INTO Gestor (cpf, nome, telefone, status, email)
-VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com');
+INSERT INTO Gestor (cpf, nome, telefone, status)
+VALUES ('21024436047', 'Gestor 1', '999999999', 'A');
 
 -- Inserir uma empresa
-INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id)
-VALUES ('Empresa Exemplo', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', '41999999999', 'responsavel@example.com', 'Responsável', 1);
+INSERT INTO Empresa (nome, is_grupo_empresarial, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id)
+VALUES ('Empresa Exemplo', TRUE, '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', '41999999999', 'responsavel@example.com', 'Responsável', 1);
 
 -- Inserir duas unidades
 INSERT INTO Unidade (nome, cnpj, cep, estado, cidade, bairro, logradouro, status, empresa_id, gestor_id)
@@ -155,9 +164,9 @@ VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Ind
        ('Unidade 2', '08292207000199', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 'A', 1, 1);
 
 -- Inserir dois operadores
-INSERT INTO Operador (cpf, nome, turno, email, gestor_id, unidade_id)
-VALUES ('01590575075', 'Operador 1', 'Manhã', 'operador1@example.com', 1, 1),
-       ('37915129007', 'Operador 2', 'Tarde', 'operador2@example.com', 1, 2);
+INSERT INTO Operador (cpf, nome, turno, gestor_id, unidade_id)
+VALUES ('01590575075', 'Operador 1', 'Manhã', 1, 1),
+       ('37915129007', 'Operador 2', 'Tarde', 1, 2);
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, gestor_id, unidade_id)

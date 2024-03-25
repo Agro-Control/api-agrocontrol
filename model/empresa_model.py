@@ -4,6 +4,7 @@ from datetime import datetime
 class Empresa(BaseModel):
     id: int | None = None
     nome: str | None = None
+    is_grupo_empresarial: bool | None = None
     cnpj:  str | None = None
     telefone: str | None = None
     cep:  str | None = None

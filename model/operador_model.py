@@ -4,7 +4,6 @@ from datetime import datetime
 class Operador(BaseModel):
     id: int | None = None
     nome: str | None = None
-    email: str | None = None
     matricula: str | None = None
     cpf:  str | None = None
     status:  str | None = None

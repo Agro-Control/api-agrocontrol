@@ -7,7 +7,6 @@ class Gestor(BaseModel):
     nome: str | None = None
     telefone: str | None = None
     status:  str | None = None
-    email:  str | None = None
     data_contratacao:  datetime | None = None
     gestor_id: int | None = None
     unidade_id: int | None = None
