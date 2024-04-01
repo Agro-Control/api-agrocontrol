@@ -38,6 +38,61 @@ def ordem_maquina_ativa(id_maquina: int):
     
     return JSONResponse(status_code=200, content=response.dict())
 
+@app.get("/ordens/{id_ordem}")
+def busca_ordem(id_ordem:int):
+    if not id_ordem:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    ordem_service = OrdemService()
+
+    response = ordem_service.busca_ordem_servico(id_ordem)
+
+    if not response:
+        return JSONResponse(status_code=404, content={"error": "Ordem de servico não encontrada"})
+
+    return response
+
+
+@app.get("/ordens")
+def buscar_ordens(id_empresa: int = Query(None, description="Empresa pertencente"),
+                    status: str = Query(None, description="Status da Unidade")):
+
+    
+    ordem_service = OrdemService()
+
+    response = ordem_service.busca_ordens_servicos(id_empresa=id_empresa, status=status)
+
+    if not response:
+        return JSONResponse(status_code= 404, content={"error": "Ordens não encontradas"})
+
+    return {"ordens_servico": response}
+
+
+@app.post("/ordens")
+def inserir_ordem(ordem: OrdemServico):
+
+    if not ordem:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    ordem_service = OrdemService()
+
+    ordem_service.inserir_ordem_servico(ordem)
+    
+    return Response(status_code=201)
+
+
+@app.put("/ordens")
+def atualizar_ordem(ordem: OrdemServico):
+    if not ordem or not ordem.id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    ordem_service = OrdemService()
+
+    response = ordem_service.altera_ordem_servico(ordem)
+    if not response:
+        return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar ordem servico."})
+
+    return response
 
 @app.get("/eventos/{id_ordem}")
 async def eventos_por_ordem(id_ordem: int):
@@ -207,7 +262,7 @@ def busca_maquinas(id_empresa: int = Query(None, description="Empresa da Maquina
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Maquina não encontrada"})
 
-    return response
+    return {"maquinas": response}
 
 
 
@@ -271,7 +326,7 @@ def busca_talhoes(id_empresa:int = Query(None, description="Empresa do talhao"),
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})
 
-    return response
+    return {"talhoes": response}
 
 
 @app.post("/talhoes")

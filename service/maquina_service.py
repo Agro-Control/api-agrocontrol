@@ -58,7 +58,7 @@ class MaquinaService:
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
-                
+                print(result) 
                 if not result:
                     return []
 
