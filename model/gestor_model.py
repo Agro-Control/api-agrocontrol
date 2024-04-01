@@ -10,7 +10,7 @@ class Gestor(BaseModel):
     email:  str | None = None
     data_contratacao:  datetime | None = None
     gestor_id: int | None = None
-    unidade_id: int | None = None
+    empresa_id: int | None = None
 
 
 # Exemplo de uso:

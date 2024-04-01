@@ -1,7 +1,7 @@
 class OrdemServico:
     def __init__(self, id= None, data_inicio= None, status= None, data_fim=None,
                  velocidade_minima=None, velocidade_maxima=None, rpm=None,
-                 gestor_id=None, talhao_id=None, unidade_id=None,
+                 gestor_id=None, talhao_id=None, unidade_id=None,empresa_id=None,
                  maquina_id=None, operadores_ids= []):
         self.id = id
         self.data_inicio = data_inicio
@@ -12,6 +12,7 @@ class OrdemServico:
         self.rpm = rpm
         self.gestor_id = gestor_id
         self.talhao_id = talhao_id
+        self.empresa_id = empresa_id
         self.unidade_id = unidade_id
         self.maquina_id = maquina_id
         self.operadores_ids = operadores_ids
@@ -28,6 +29,7 @@ class OrdemServico:
             "gestor_id": self.gestor_id,
             "talhao_id": self.talhao_id,
             "unidade_id": self.unidade_id,
+            "empresa_id": self.empresa_id,
             "maquina_id": self.maquina_id,
             "operadores_ids": self.operadores_ids
         }

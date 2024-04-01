@@ -7,7 +7,7 @@ CREATE TABLE Gestor (
     email VARCHAR(60),
     data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	gestor_id INT,
-	unidade_id INT
+	empresa_id INT
 );
 
 
@@ -60,7 +60,7 @@ CREATE TABLE Operador (
 	telefone VARCHAR(14),
 	data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	gestor_id INT,
-	unidade_id INT
+	empresa_id INT
 );
 
 CREATE TABLE Talhao(
@@ -69,7 +69,7 @@ CREATE TABLE Talhao(
 	tamanho VARCHAR(5),
 	status CHAR DEFAULT 'A',
 	gestor_id INT,
-	unidade_id INT
+	empresa_id INT
 );
 
 
@@ -82,7 +82,7 @@ CREATE TABLE Maquina(
 	capacidade_operacional INT,
 	data_aquisicao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	gestor_id INT,
-	unidade_id INT
+	empresa_id INT
 );
 
 
@@ -97,6 +97,7 @@ CREATE TABLE Ordem_Servico(
 	rpm double precision,
 	id_gestor INT,
 	id_unidade INT,
+	id_empresa INT,
 	id_talhao INT,
 	id_maquina INT
 );
@@ -108,7 +109,7 @@ CREATE TABLE Ordem_Servico_Operador(
 
 ALTER TABLE Gestor
 ADD CONSTRAINT fk_gestor_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
-ADD CONSTRAINT fk_gestor_unidade_id FOREIGN KEY (unidade_id) REFERENCES Unidade(id);
+ADD CONSTRAINT fk_gestor_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Empresa
 ADD CONSTRAINT fk_empresa_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id);
@@ -119,19 +120,20 @@ ADD CONSTRAINT fk_unidade_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES G
 
 ALTER TABLE Operador
 ADD CONSTRAINT fk_operador_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
-ADD CONSTRAINT fk_operador_unidade_id FOREIGN KEY (unidade_id) REFERENCES Unidade(id);
+ADD CONSTRAINT fk_operador_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Talhao
 ADD CONSTRAINT fk_talhao_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
-ADD CONSTRAINT fk_talhao_unidade_id FOREIGN KEY (unidade_id) REFERENCES Unidade(id);
+ADD CONSTRAINT fk_talhao_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Maquina
 ADD CONSTRAINT fk_maquina_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
-ADD CONSTRAINT fk_maquina_unidade_id FOREIGN KEY (unidade_id) REFERENCES Unidade(id);
+ADD CONSTRAINT fk_maquina_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Ordem_Servico
 ADD CONSTRAINT fk_ordem_servico_gestor_id FOREIGN KEY (id_gestor) REFERENCES Gestor(id),
 ADD CONSTRAINT fk_ordem_servico_unidade_id FOREIGN KEY (id_unidade) REFERENCES Unidade(id),
+ADD CONSTRAINT fk_ordem_servico_empresa_id FOREIGN KEY (id_empresa) REFERENCES Empresa(id),
 ADD CONSTRAINT fk_ordem_servico_talhao_id FOREIGN KEY (id_talhao) REFERENCES Talhao(id),
 ADD CONSTRAINT fk_ordem_servico_maquina_id FOREIGN KEY (id_maquina) REFERENCES Maquina(id);
 
@@ -155,23 +157,21 @@ VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Ind
        ('Unidade 2', '08292207000199', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 'A', 1, 1);
 
 -- Inserir dois operadores
-INSERT INTO Operador (cpf, nome, turno, email, gestor_id, unidade_id)
-VALUES ('01590575075', 'Operador 1', 'Manhã', 'operador1@example.com', 1, 1),
-       ('37915129007', 'Operador 2', 'Tarde', 'operador2@example.com', 1, 2);
+INSERT INTO Operador (cpf, nome, turno, email, gestor_id, empresa_id)
+VALUES ('01590575075', 'Operador 1', 'Manhã', 'operador1@example.com', 1, 1);
 
 -- Inserir uma máquina
-INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, gestor_id, unidade_id)
+INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, gestor_id, empresa_id)
 VALUES ('Máquina 1', 'Fabricante 1', 'Modelo 1', 100, 1, 1);
 
 -- Inserir um talhão
-INSERT INTO Talhao (codigo, tamanho, status, gestor_id, unidade_id)
+INSERT INTO Talhao (codigo, tamanho, status, gestor_id, empresa_id)
 VALUES ('1234', '10', 'A', 1, 1);
 
 -- Inserir uma ordem de serviço
-INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, rpm, id_gestor, id_unidade, id_talhao, id_maquina)
-VALUES (10.5, 20.5, 1000.0, 1, 1, 1, 1);
+INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, rpm, id_gestor, id_empresa, id_unidade, id_talhao, id_maquina)
+VALUES (10.5, 20.5, 1000.0, 1, 1, 1, 1, 1);
 
 -- Inserir um talhão
 INSERT INTO Ordem_Servico_Operador (id_ordem_servico, id_operador) 
 VALUES	(1, 1);
-
