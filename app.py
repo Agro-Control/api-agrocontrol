@@ -357,10 +357,6 @@ def atualizar_talhao(talhao: Talhao):
 
     return response
 
-
-
-
-
 @app.get("/gestor/{id}", response_model=Usuario)
 def busca_gestor(id: int)-> Usuario:
     
@@ -378,7 +374,7 @@ def busca_gestor(id: int)-> Usuario:
 
 
 @app.get("/gestores")
-def busca_unidades(status: str = Query(None, description="Status do Gestor"),
+def busca_gestores(status: str = Query(None, description="Status do Gestor"),
                    codigo: str = Query(None, description= "Nome/Codigo do Gestor")):
 
     gestor_service = UsuarioService()
@@ -415,5 +411,62 @@ def atualiza_gestor(gestor: Usuario):
     response = gestor_service.altera_gestor(gestor)
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar gestor."})
+
+    return response
+
+@app.get("/operador/{id}", response_model=Usuario)
+def busca_operador(id: int)-> Usuario:
+    
+    if not id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    operador_service = UsuarioService()
+
+    response = operador_service.buscar_operador(id)
+    
+    if not response or isinstance(response, Dict):
+        return JSONResponse(status_code= 404, content={"error": "Operador não encontrada"})
+
+    return response
+
+
+@app.get("/operadores")
+def busca_operadores(status: str = Query(None, description="Status do Operador"),
+                   codigo: str = Query(None, description= "Nome/Codigo do Operador")):
+
+    operador_service = UsuarioService()
+
+    print(f"Codigo: {codigo}")
+    print(f"Status: {status}")
+    response = operador_service.buscar_operadores(status=status,codigo=codigo)
+
+    if not response:
+        return JSONResponse(status_code= 404, content={"error": "Operadores não encontrados"})
+
+    return {"operador": response}
+ 
+@app.post("/operadores")
+def inserir_operador(operador: Usuario):
+    
+    if not operador:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    operador_service = UsuarioService()
+    
+    operador_service.inserir_operador(operador)
+    
+    return Response(status_code=201)
+
+@app.put("/operadores")
+def atualiza_operador(operador: Usuario):
+
+    if not operador or not operador.id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+    
+    operador_service = UsuarioService()
+    
+    response = operador_service.altera_operador(operador)
+    if not response:
+        return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar operador."})
 
     return response
