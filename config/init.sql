@@ -1,15 +1,17 @@
-CREATE TABLE Gestor (
+CREATE TABLE Usuario (
     id SERIAL PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(255),
     cpf VARCHAR(11),
-    nome VARCHAR(60),
     telefone VARCHAR(14),
-	status CHAR DEFAULT 'A',
-    email VARCHAR(60),
+    status CHAR DEFAULT 'A',
     data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	gestor_id INT,
-	empresa_id INT
+    gestor_id INT,
+    empresa_id INT,
+    matricula VARCHAR(20),
+    turno VARCHAR(5),
+    tipo CHAR(1)
 );
-
 
 CREATE TABLE Empresa (
     id SERIAL PRIMARY KEY,
@@ -48,21 +50,6 @@ CREATE TABLE Unidade(
     gestor_id INT
 );
 
-
-CREATE TABLE Operador (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(100),
-    email VARCHAR(255),
-    matricula VARCHAR(20),
-	cpf VARCHAR(11),
-	status CHAR DEFAULT 'A',
-	turno VARCHAR(5),
-	telefone VARCHAR(14),
-	data_contratacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	gestor_id INT,
-	empresa_id INT
-);
-
 CREATE TABLE Talhao(
 	id SERIAL PRIMARY KEY,
 	codigo VARCHAR(10),
@@ -71,7 +58,6 @@ CREATE TABLE Talhao(
 	gestor_id INT,
 	empresa_id INT
 );
-
 
 CREATE TABLE Maquina(
 	id SERIAL primary KEY,
@@ -84,7 +70,6 @@ CREATE TABLE Maquina(
 	gestor_id INT,
 	empresa_id INT
 );
-
 
 CREATE TABLE Ordem_Servico(
 	id SERIAL PRIMARY KEY,
@@ -107,31 +92,27 @@ CREATE TABLE Ordem_Servico_Operador(
 	id_operador INT
 );
 
-ALTER TABLE Gestor
-ADD CONSTRAINT fk_gestor_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
+ALTER TABLE Usuario
+ADD CONSTRAINT fk_gestor_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Usuario(id),
 ADD CONSTRAINT fk_gestor_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Empresa
-ADD CONSTRAINT fk_empresa_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id);
+ADD CONSTRAINT fk_empresa_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Usuario(id);
 
 ALTER TABLE Unidade
 ADD CONSTRAINT fk_unidade_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id),
-ADD CONSTRAINT fk_unidade_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id);
-
-ALTER TABLE Operador
-ADD CONSTRAINT fk_operador_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
-ADD CONSTRAINT fk_operador_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
+ADD CONSTRAINT fk_unidade_gestor_criacao_id FOREIGN KEY (gestor_id) REFERENCES Usuario(id);
 
 ALTER TABLE Talhao
-ADD CONSTRAINT fk_talhao_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
+ADD CONSTRAINT fk_talhao_gestor_id FOREIGN KEY (gestor_id) REFERENCES Usuario(id),
 ADD CONSTRAINT fk_talhao_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Maquina
-ADD CONSTRAINT fk_maquina_gestor_id FOREIGN KEY (gestor_id) REFERENCES Gestor(id),
+ADD CONSTRAINT fk_maquina_gestor_id FOREIGN KEY (gestor_id) REFERENCES Usuario(id),
 ADD CONSTRAINT fk_maquina_empresa_id FOREIGN KEY (empresa_id) REFERENCES Empresa(id);
 
 ALTER TABLE Ordem_Servico
-ADD CONSTRAINT fk_ordem_servico_gestor_id FOREIGN KEY (id_gestor) REFERENCES Gestor(id),
+ADD CONSTRAINT fk_ordem_servico_gestor_id FOREIGN KEY (id_gestor) REFERENCES Usuario(id),
 ADD CONSTRAINT fk_ordem_servico_unidade_id FOREIGN KEY (id_unidade) REFERENCES Unidade(id),
 ADD CONSTRAINT fk_ordem_servico_empresa_id FOREIGN KEY (id_empresa) REFERENCES Empresa(id),
 ADD CONSTRAINT fk_ordem_servico_talhao_id FOREIGN KEY (id_talhao) REFERENCES Talhao(id),
@@ -139,13 +120,13 @@ ADD CONSTRAINT fk_ordem_servico_maquina_id FOREIGN KEY (id_maquina) REFERENCES M
 
 ALTER TABLE Ordem_Servico_Operador
 ADD CONSTRAINT fk_ordem_servico_operador_ordem_id FOREIGN KEY (id_ordem_servico) REFERENCES Ordem_Servico(id),
-ADD CONSTRAINT fk_ordem_servico_operador_id FOREIGN KEY (id_operador) REFERENCES Operador(id);
+ADD CONSTRAINT fk_ordem_servico_operador_id FOREIGN KEY (id_operador) REFERENCES Usuario(id);
 
 --	Inserindo dados basicos	--
 
 -- Inserir um gestor
-INSERT INTO Gestor (cpf, nome, telefone, status, email)
-VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com');
+INSERT INTO Usuario (cpf, nome, telefone, status, email, tipo)
+VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com', 'G');
 
 -- Inserir uma empresa
 INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id)
@@ -157,8 +138,8 @@ VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Ind
        ('Unidade 2', '08292207000199', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 'A', 1, 1);
 
 -- Inserir dois operadores
-INSERT INTO Operador (cpf, nome, turno, email, gestor_id, empresa_id)
-VALUES ('01590575075', 'Operador 1', 'Manhã', 'operador1@example.com', 1, 1);
+INSERT INTO Usuario (cpf, nome, turno, email, gestor_id, empresa_id, tipo)
+VALUES ('01590575075', 'Operador 1', 'Manhã', 'operador1@example.com', 1, 1, 'O');
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, gestor_id, empresa_id)
