@@ -13,7 +13,7 @@ class UnidadeService:
                         SELECT 
                             *
                         FROM Unidade u 
-                        where u.id = %s ;
+                        WHERE u.id = %s ;
                     """
                 
                 cursor.execute(sql, (id_unidade, ), prepare=True)
@@ -28,7 +28,7 @@ class UnidadeService:
         return unidade
 
 
-    def buscar_unidades(self, codigo: str | None = None, status: str | None = None):
+    def buscar_unidades(self, id_empresa:int | None = None, codigo: str | None = None, status: str | None = None):
         unidades = []
         
         with Database() as conn: 
@@ -41,6 +41,10 @@ class UnidadeService:
                         FROM Unidade u
                         WHERE 1=1
                     """
+                
+                if id_empresa:
+                    sql += "AND u.empresa_id = %s"
+                    params.append(id_empresa)
 
                 if codigo:
                     sql += " AND u.nome LIKE %s"
@@ -50,8 +54,6 @@ class UnidadeService:
                     sql += " AND u.status = %s"
                     params.append(status)
     
-                print(sql)
-                
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
@@ -73,10 +75,10 @@ class UnidadeService:
                 insert_query = """
                     INSERT INTO unidade (
                         nome, cnpj, cep, estado, cidade, bairro, logradouro,
-                        numero, complemento, gestor_id
+                        numero, complemento, gestor_id, empresa_id
                     )
                     VALUES (%(nome)s, %(cnpj)s, %(cep)s, %(estado)s, %(cidade)s, %(bairro)s, %(logradouro)s,
-                    %(numero)s, %(complemento)s, %(gestor_id)s)
+                    %(numero)s, %(complemento)s, %(gestor_id)s, %(empresa_id)s)
                 """
                 try:
                     cursor.execute(insert_query, unidade.dict(), prepare=True)

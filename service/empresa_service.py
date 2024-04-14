@@ -28,7 +28,7 @@ class EmpresaService:
         return empresa
 
 ##################################################
-    def buscar_empresas(self, codigo: str | None = None, status: str | None = None):
+    def buscar_empresas(self, codigo: str | None = None, status: str | None = None, estado: str | None = None, cidade: str | None = None):
         empresas = []
         
         with Database() as conn: 
@@ -49,6 +49,14 @@ class EmpresaService:
                 if status:
                     sql += " AND e.status = %s"
                     params.append(status)
+                
+                if estado:
+                    sql += " AND e.estado LIKE %s"
+                    params.append(estado)
+                
+                if cidade:
+                    sql += " AND e.cidade LIKE %s"
+                    params.append(f"%{cidade}%")
     
                 print(sql)
                 
@@ -87,7 +95,7 @@ class EmpresaService:
                     conn.commit()
 
                     
-        return 
+        return empresa
 
     def altera_empresa(self, empresa_update: Empresa):
         empresa = {}
@@ -109,7 +117,6 @@ class EmpresaService:
                         numero = %(numero)s,
                         complemento = %(complemento)s,
                         status = %(status)s,
-                        data_criacao = %()s,
                         telefone_responsavel = %(telefone_responsavel)s,
                         email_responsavel = %(email_responsavel)s,
                         nome_responsavel = %(nome_responsavel)s
