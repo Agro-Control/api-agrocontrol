@@ -28,17 +28,18 @@ class UnidadeService:
         return unidade
 
 
-    def buscar_unidades(self, id_empresa:int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_unidades(self, id_empresa: int | None = None, codigo: str | None = None, status: str | None = None):
         unidades = []
         
         with Database() as conn: 
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-    
+
                 params = []
 
                 sql = f"""SELECT 
-                            *
+                            u.*, e.nome AS empresa_nome
                         FROM Unidade u
+                        LEFT JOIN Empresa e ON u.empresa_id = e.id
                         WHERE 1=1
                     """
                 
@@ -53,7 +54,7 @@ class UnidadeService:
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
-    
+
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
@@ -62,9 +63,10 @@ class UnidadeService:
                     return []
                 
                 for row in result:
-                    unidades.append(Unidade(**row))
+                    unidades.append(row)
 
         return unidades
+
 
 
     def inserir_unidade(self, unidade: Unidade):
