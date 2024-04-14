@@ -15,9 +15,17 @@ from model.empresa_model import Empresa
 from service.empresa_service import EmpresaService
 from model.usuario_model import Usuario
 from service.usuario_service import UsuarioService
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
 @app.exception_handler(Exception)
 async def generic_exception_handler(request, exc):
     return await ApiExceptionHandler.handler(exc)
@@ -194,13 +202,17 @@ def busca_empresa(id_empresa: int)-> Empresa:
 
 @app.get("/empresas")
 def busca_empresas(status: str = Query(None, description="Status da Empresa"),
-                   codigo: str = Query(None, description= "Nome/Codigo da Empresa")):
+                   codigo: str = Query(None, description= "Nome/Codigo da Empresa"),
+                   estado: str = Query(None, description= "Nome do Estado da Empresa"),
+                   cidade: str = Query(None, description="Nome da Cidade da Empresa")):
 
     empresa_service = EmpresaService()
 
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(status=status,codigo=codigo)
+    print(f"Estado: {cidade}")
+    print(f"Cidade: {cidade}")
+    response = empresa_service.buscar_empresas(status=status,codigo=codigo,estado=estado,cidade=cidade)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Empresas não encontradas"})
