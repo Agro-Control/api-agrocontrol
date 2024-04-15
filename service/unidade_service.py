@@ -111,6 +111,7 @@ class UnidadeService:
                         logradouro = %(logradouro)s,
                         numero = %(numero)s,
                         complemento = %(complemento)s,
+                        empresa_id = %(empresa_id)s,
                         status = %(status)s
                     WHERE id = %(id)s
                 """
