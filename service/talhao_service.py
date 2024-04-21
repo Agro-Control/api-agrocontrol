@@ -74,7 +74,7 @@ class TalhaoService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO talhao (
-                        codigo, tamanho, gestor_id, unidade_id
+                        codigo, tamanho, gestor_id, empresa_id
                         )
                     VALUES (%(codigo)s, %(tamanho)s, %(gestor_id)s, %(empresa_id)s)
                 """
@@ -86,7 +86,7 @@ class TalhaoService:
                 finally:
                     conn.commit()
 
-        return  
+        return talhao
 
 
     def altera_talhao(self, talhao_update: Talhao):
@@ -103,7 +103,7 @@ class TalhaoService:
                         tamanho = %(tamanho)s,
                         status = %(status)s
                     WHERE id = %(id)s
-                    and unidade_id = %(empresa_id)s
+                    and empresa_id = %(empresa_id)s
                 """
                 
                 try:
@@ -114,7 +114,7 @@ class TalhaoService:
                 finally:
                     conn.commit()
                 
-                talhao = self.buscar_talhao(talhao_update.empresa_id, talhao_update.id)
+                talhao = self.buscar_talhao(talhao_update.id)
 
                 if not talhao:
                     return {}

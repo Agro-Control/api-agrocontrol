@@ -95,7 +95,7 @@ class EmpresaService:
                     conn.commit()
 
                     
-        return empresa
+        return 
 
     def altera_empresa(self, empresa_update: Empresa):
         empresa = {}
