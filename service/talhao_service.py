@@ -74,7 +74,7 @@ class TalhaoService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO talhao (
-                        codigo, tamanho, gestor_id, unidade_iid
+                        codigo, tamanho, gestor_id, empresa_id
                         )
                     VALUES (%(codigo)s, %(tamanho)s, %(gestor_id)s, %(empresa_id)s)
                 """
