@@ -19,6 +19,7 @@ class Empresa(BaseModel):
     email_responsavel: str | None = None
     nome_responsavel: str | None = None
     gestor_id: int | None = None
+    grupo_empresarial_id: int | None = None
 
 # Exemplo de uso:
 #empresa1 = Empresa(1, "Empresa A", "12345678901234", "987654321", "12345678", "SP", "São Paulo", "Centro", "Rua A", "123", "Apto 101", "Ativa", "999999999", "responsavel@email.com", "Responsável 1", 1)

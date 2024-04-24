@@ -30,7 +30,8 @@ CREATE TABLE Empresa (
     telefone_responsavel VARCHAR(11),
     email_responsavel VARCHAR(60),
     nome_responsavel VARCHAR(60),
-    gestor_id INT
+    gestor_id INT,
+    grupo_empresarial_id INT
 );
 
 CREATE TABLE Unidade(
@@ -124,22 +125,29 @@ ADD CONSTRAINT fk_ordem_servico_operador_id FOREIGN KEY (id_operador) REFERENCES
 
 --	Inserindo dados basicos	--
 
--- Inserir um gestor
-INSERT INTO Usuario (cpf, nome, telefone, status, email, tipo)
-VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com', 'G');
+
+-- Inserir um admin pela saco
+INSERT INTO Usuario (nome, status, tipo )
+VALUES ('21024436047', 'A', 'A');
 
 -- Inserir uma empresa
-INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id)
-VALUES ('Empresa Exemplo', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', '41999999999', 'responsavel@example.com', 'Responsável', 1);
+INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id, grupo_empresarial_id)
+VALUES ('Empresa Exemplo', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', '41999999999', 'responsavel@example.com', 'Responsável', 1, 1);
 
 -- Inserir duas unidades
 INSERT INTO Unidade (nome, cnpj, cep, estado, cidade, bairro, logradouro, status, empresa_id, gestor_id)
-VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Indutrial', 'Cyro Correia Pereira','A', 1, 1),
+VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Industrial', 'Cyro Correia Pereira','A', 1, 1),
        ('Unidade 2', '08292207000199', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 'A', 1, 1);
 
+-- Inserir um gestor
+INSERT INTO Usuario (cpf, nome, telefone, status, email, tipo, empresa_id)
+VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com', 'G', 1);
+
+UPDATE Empresa SET gestor_id = (SELECT id FROM Usuario WHERE tipo = 'G') WHERE id = 1;
+
 -- Inserir dois operadores
-INSERT INTO Usuario (cpf, nome, turno, email, gestor_id, empresa_id, tipo)
-VALUES ('01590575075', 'Operador 1', 'Manhã', 'operador1@example.com', 1, 1, 'O');
+INSERT INTO Usuario (cpf, matricula, nome, turno, email, status, gestor_id, empresa_id, tipo)
+VALUES ('01590575075', '98989', 'Operador 1', 'Manhã', 'operador1@example.com', 'A', 1, 1, 'O');
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, gestor_id, empresa_id)

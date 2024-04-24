@@ -71,9 +71,9 @@ class UsuarioService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, telefone, email, gestor_id, unidade_id, tipo
+                        cpf, nome, telefone, email, empresa_id, tipo
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(gestor_id)s, %(unidade_id)s, 'G')
+                    VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, 'G')
                 """
                 try:
                     cursor.execute(insert_query, gestor.dict(), prepare=True)
@@ -95,16 +95,13 @@ class UsuarioService:
                 update_query = """
                     UPDATE Usuario
                     SET
-                        cpf = %(nome)s,
-                        nome = %(cnpj)s,
-                        telefone = %(cep)s,
-                        status = %(estado)s,
-                        email = %(cidade)s,
-                        gestor_id = %(bairro)s,
-                        unidade_id = %(logradouro)s
+                        nome = %(nome)s,
+                        email = %(email)s,
+                        telefone = %(telefone)s,
+                        status = %(status)s,
+                        empresa_id = %(logradouro)s,
                     WHERE id = %(id)s and tipo = 'G'
                 """
-                
                 try:
                     cursor.execute(update_query, gestor_update.dict(), prepare=True)
                 except Exception as e:
@@ -211,17 +208,15 @@ class UsuarioService:
                 update_query = """
                     UPDATE Usuario
                     SET
-                        cpf = %(nome)s,
-                        nome = %(cnpj)s,
-                        status = %(estado)s,
-                        email = %(cidade)s,
-                        matricula = %(matricula)s,
+                        nome = %(nome)s,
                         turno = %(turno)s,
+                        email = %(email)s,
                         gestor_id = %(bairro)s,
                         empresa_id = %(logradouro)s
+                        status = %(status)s,
+                        matricula = %(matricula)s,       
                     WHERE id = %(id)s and tipo = 'O'
-                """
-                
+                """  
                 try:
                     cursor.execute(update_query, operador_update.dict(), prepare=True)
                 except Exception as e:

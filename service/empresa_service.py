@@ -43,8 +43,8 @@ class EmpresaService:
                     """
 
                 if codigo:
-                    sql += " AND e.nome LIKE %s"
-                    params.append(f"%{codigo}%")
+                    sql += " AND LOWER(e.nome) LIKE LOWER(%s)"
+                    params.append(f"%{codigo.lower()}%")
 
                 if status:
                     sql += " AND e.status = %s"
