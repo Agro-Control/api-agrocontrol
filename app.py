@@ -204,13 +204,15 @@ def busca_empresa(id_empresa: int)-> Empresa:
 
 @app.get("/empresas")
 def busca_empresas(status: str = Query(None, description="Status da Empresa"),
-                   codigo: str = Query(None, description= "Nome/Codigo da Empresa")):
+                   codigo: str = Query(None, description= "Nome/Codigo da Empresa"),
+                    estado: str = Query(None, description= "Nome do Estado da Empresa"),
+                   ):
 
     empresa_service = EmpresaService()
 
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(status=status,codigo=codigo)
+    response = empresa_service.buscar_empresas(status=status,codigo=codigo, estado=estado)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Empresas não encontradas"})
@@ -480,6 +482,20 @@ def atualiza_operador(operador: Usuario):
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar operador."})
 
     return response
+
+
+@app.get("/estados_empresa")
+def busca_estados_empresas(
+            id_grupo: int = Query(None, description="id do grupo empresarial"),
+            id_empresa: int = Query(None, description= "id da empresa")
+        ):
+
+    empresa_service = EmpresaService()
+    
+    result = empresa_service.busca_estado_empresas(id_grupo, id_empresa)
+    
+    return result
+
 
 @app.post("/login")
 def login(email: str, senha: str, usuario_service: UsuarioService = Depends()):
