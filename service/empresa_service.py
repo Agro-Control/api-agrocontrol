@@ -73,10 +73,10 @@ class EmpresaService:
                 insert_query = """
                     INSERT INTO empresa (
                         nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro,
-                        numero, complemento, data_criacao, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id
+                        numero, complemento, data_criacao, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id, grupo_empresarial_id
                     )
                     VALUES (%(nome)s, %(cnpj)s, %(telefone)s, %(cep)s, %(estado)s, %(cidade)s, %(bairro)s, %(logradouro)s,
-                    %(numero)s, %(complemento)s, %(data_criacao)s, %(telefone_responsavel)s, %(email_responsavel)s, %(nome_responsavel)s, %(gestor_id)s)
+                    %(numero)s, %(complemento)s, %(data_criacao)s, %(telefone_responsavel)s, %(email_responsavel)s, %(nome_responsavel)s, %(gestor_id)s, %(grupo_empresarial_id)s)
                 """
                 try:
                     cursor.execute(insert_query, empresa.dict(), prepare=True)

@@ -10,7 +10,8 @@ CREATE TABLE Usuario (
     empresa_id INT,
     matricula VARCHAR(20),
     turno VARCHAR(5),
-    tipo CHAR(1)
+    tipo CHAR(1),
+    senha VARCHAR(255)
 );
 
 CREATE TABLE Empresa (
@@ -140,8 +141,8 @@ VALUES ('Unidade 1', '00213983000144', '81170230', 'PR', 'Curitiba', 'Cidade Ind
        ('Unidade 2', '08292207000199', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 'A', 1, 1);
 
 -- Inserir um gestor
-INSERT INTO Usuario (cpf, nome, telefone, status, email, tipo, empresa_id)
-VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com', 'G', 1);
+INSERT INTO Usuario (cpf, nome, telefone, status, email, tipo, empresa_id, senha)
+VALUES ('21024436047', 'Gestor 1', '999999999', 'A', 'gestor1@example.com', 'G', 1, '12345');
 
 UPDATE Empresa SET gestor_id = (SELECT id FROM Usuario WHERE tipo = 'G') WHERE id = 1;
 

@@ -1,10 +1,12 @@
+from datetime import timedelta
 from typing import Dict, List, Optional
-from fastapi import FastAPI, Request, Response, Query
+from fastapi import Depends, FastAPI, Request, Response, Query
 from fastapi.responses import JSONResponse
 from model.maquina_model import Maquina
 from model.ordem_de_servico_model import OrdemServico
 from model.talhao_model import Talhao
 from model.unidade_model import Unidade
+from service.jwt_service import token_24horas
 from service.maquina_service import MaquinaService
 from service.ordem_service import OrdemService
 from errors import ApiExceptionHandler
@@ -478,3 +480,14 @@ def atualiza_operador(operador: Usuario):
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar operador."})
 
     return response
+
+@app.post("/login")
+def login(email: str, senha: str, usuario_service: UsuarioService = Depends()):
+    usuario = usuario_service.validar_credenciais(email, senha)
+    if usuario:
+        tempo_token = timedelta(minutes=60)
+        token = token_24horas(data={"sub": usuario.email}, expires_delta=tempo_token)
+        
+        return {"usuario": usuario, "token": token}
+    else:
+        return JSONResponse(status_code=401, content={"error": "Credenciais inválidas"})
