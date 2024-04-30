@@ -280,7 +280,7 @@ def busca_maquinas(id_empresa: int = Query(None, description="Empresa da Maquina
 @app.post("/maquinas")
 def inserir_maquinas(maquina: Maquina):
 
-    if not maquina or not maquina.id:
+    if not maquina:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
 

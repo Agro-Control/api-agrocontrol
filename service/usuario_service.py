@@ -220,7 +220,7 @@ class UsuarioService:
                         turno = %(turno)s,
                         email = %(email)s,
                         gestor_id = %(gestor_id)s,
-                        empresa_id = %(empresa_id)s
+                        empresa_id = %(empresa_id)s,
                         status = %(status)s,
                         matricula = %(matricula)s,       
                     WHERE id = %(id)s and tipo = 'O'
