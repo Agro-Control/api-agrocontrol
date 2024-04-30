@@ -497,10 +497,18 @@ def busca_estados_empresas(
     
     return result
 
+class Login(BaseModel):
+    email: str
+    senha: str
+    
 
 @app.post("/login")
-def login(email: str, senha: str, usuario_service: UsuarioService = Depends()):
-    usuario = usuario_service.validar_credenciais(email, senha)
+def login(login: Login):
+        # email: str, senha: str, usuario_service: UsuarioService = Depends()):
+    
+    usuario_service = UsuarioService()
+    usuario = usuario_service.validar_credenciais(login.email, login.senha)
+    
     if usuario:
         # Remover a senha do objeto de usuário
         usuario.senha = None  # ou "" ou qualquer outro valor que você preferir
