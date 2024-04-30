@@ -14,3 +14,4 @@ class Usuario(BaseModel):
     matricula: str | None = None
     turno: str | None = None
     tipo: str | None = None
+    senha: str | None = None

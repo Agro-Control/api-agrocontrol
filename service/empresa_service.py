@@ -1,3 +1,4 @@
+from logging import exception
 from connection.postgres import Database
 from errors import DatabaseError
 from model.empresa_model import Empresa 
@@ -28,7 +29,7 @@ class EmpresaService:
         return empresa
 
 ##################################################
-    def buscar_empresas(self, gestor_id: int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_empresas(self, gestor_id: int | None = None, codigo: str | None = None, status: str | None = None , estado: str | None = None):
         empresas = []
         
         with Database() as conn: 
@@ -49,6 +50,10 @@ class EmpresaService:
                 if status:
                     sql += " AND e.status = %s"
                     params.append(status)
+
+                if estado:
+                    sql += " AND e.estado = %s"
+                    params.append(estado)
 
                 if gestor_id:
                     sql += " AND e.gestor_id = %s"
@@ -77,10 +82,10 @@ class EmpresaService:
                 insert_query = """
                     INSERT INTO empresa (
                         nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro,
-                        numero, complemento, data_criacao, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id
+                        numero, complemento, data_criacao, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id, grupo_empresarial_id
                     )
                     VALUES (%(nome)s, %(cnpj)s, %(telefone)s, %(cep)s, %(estado)s, %(cidade)s, %(bairro)s, %(logradouro)s,
-                    %(numero)s, %(complemento)s, %(data_criacao)s, %(telefone_responsavel)s, %(email_responsavel)s, %(nome_responsavel)s, %(gestor_id)s)
+                    %(numero)s, %(complemento)s, %(data_criacao)s, %(telefone_responsavel)s, %(email_responsavel)s, %(nome_responsavel)s, %(gestor_id)s, %(grupo_empresarial_id)s)
                 """
                 try:
                     cursor.execute(insert_query, empresa.dict(), prepare=True)
@@ -134,3 +139,45 @@ class EmpresaService:
                     return {}
     
         return empresa
+
+
+    def busca_estado_empresas(self, id_grupo: int | None = None, id_empresa: int | None = None):
+        estados = {}
+
+        with Database() as conn: 
+            with conn.cursor() as cursor:
+                sql = """
+                    SELECT 
+                        estado
+                    FROM empresa
+                    WHERE 1=1
+                """
+
+                if id_grupo:
+                    sql += " AND grupo_empresarial_id = %s"
+
+                if id_empresa:
+                    sql += " AND id = %s"
+
+                
+                sql += " GROUP BY estado";
+                
+                try:
+                    cursor.execute(sql, (id_grupo, ), prepare= True)
+                except Exception as e:
+                     raise DatabaseError(e)
+                
+
+                result = cursor.fetchall()
+
+                if not result:
+                    return {}
+                
+                estados = {
+                    "estados": [row for row in result]
+                }
+                
+        return estados
+
+
+

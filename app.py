@@ -1,10 +1,13 @@
+from datetime import timedelta
+from fastapi import HTTPException
 from typing import Dict, List, Optional
-from fastapi import FastAPI, Request, Response, Query
+from fastapi import Depends, FastAPI, Request, Response, Query
 from fastapi.responses import JSONResponse
 from model.maquina_model import Maquina
 from model.ordem_de_servico_model import OrdemServico
 from model.talhao_model import Talhao
 from model.unidade_model import Unidade
+from service.jwt_service import token_24horas
 from service.maquina_service import MaquinaService
 from service.ordem_service import OrdemService
 from errors import ApiExceptionHandler
@@ -203,14 +206,16 @@ def busca_empresa(id_empresa: int)-> Empresa:
 @app.get("/empresas")
 def busca_empresas(gestor_id: int = Query(None, description="Id do Gestor"),
                    status: str = Query(None, description="Status da Empresa"),
-                   codigo: str = Query(None, description= "Nome/Codigo da Empresa")):
+                   codigo: str = Query(None, description= "Nome/Codigo da Empresa"),
+                   estado: str = Query(None, description= "Nome do Estado da Empresa"),
+                   ):
 
     empresa_service = EmpresaService()
 
     print(f"Gestor ID: {gestor_id}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(gestor_id = gestor_id, status=status,codigo=codigo)
+    response = empresa_service.buscar_empresas(gestor_id = gestor_id, status=status,codigo=codigo, estado=estado)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Empresas não encontradas"})
@@ -483,3 +488,42 @@ def atualiza_operador(operador: Usuario):
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar operador."})
 
     return response
+
+
+@app.get("/estados_empresa")
+def busca_estados_empresas(
+            id_grupo: int = Query(None, description="id do grupo empresarial"),
+            id_empresa: int = Query(None, description= "id da empresa")
+        ):
+
+    empresa_service = EmpresaService()
+    
+    result = empresa_service.busca_estado_empresas(id_grupo, id_empresa)
+    
+    return result
+
+class Login(BaseModel):
+    email: str
+    senha: str
+    
+
+@app.post("/login")
+def login(login: Login):
+        # email: str, senha: str, usuario_service: UsuarioService = Depends()):
+    
+    usuario_service = UsuarioService()
+    usuario = usuario_service.validar_credenciais(login.email, login.senha)
+    
+    if usuario:
+        # Remover a senha do objeto de usuário
+        usuario.senha = None  # ou "" ou qualquer outro valor que você preferir
+
+        # Gerar token JWT
+        tempo_token = timedelta(minutes=60)
+        token = token_24horas(data={"sub": usuario.email}, expires_delta=tempo_token)
+        
+        # Retorna o usuário junto com o token JWT
+        return {"usuario": usuario, "token": token}
+    else:
+        # Retornar manualmente o erro 401
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
