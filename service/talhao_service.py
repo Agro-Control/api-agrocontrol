@@ -45,7 +45,8 @@ class TalhaoService:
 
                 if id_empresa:
                     sql += "AND t.empresa_id = %s"
-
+                    params.append(id_empresa)
+                    
                 if codigo:
                     sql += " AND t.codigo LIKE %s"
                     params.append(f"%{codigo}%")

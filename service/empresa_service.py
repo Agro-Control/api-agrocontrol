@@ -28,7 +28,7 @@ class EmpresaService:
         return empresa
 
 ##################################################
-    def buscar_empresas(self, codigo: str | None = None, status: str | None = None):
+    def buscar_empresas(self, gestor_id: int | None = None, codigo: str | None = None, status: str | None = None):
         empresas = []
         
         with Database() as conn: 
@@ -49,7 +49,11 @@ class EmpresaService:
                 if status:
                     sql += " AND e.status = %s"
                     params.append(status)
-    
+
+                if gestor_id:
+                    sql += " AND e.gestor_id = %s"
+                    params.append(gestor_id)
+
                 print(sql)
                 
                 cursor.execute(sql, params, prepare=True)

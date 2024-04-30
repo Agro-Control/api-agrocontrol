@@ -201,14 +201,16 @@ def busca_empresa(id_empresa: int)-> Empresa:
 
 
 @app.get("/empresas")
-def busca_empresas(status: str = Query(None, description="Status da Empresa"),
+def busca_empresas(gestor_id: int = Query(None, description="Id do Gestor"),
+                   status: str = Query(None, description="Status da Empresa"),
                    codigo: str = Query(None, description= "Nome/Codigo da Empresa")):
 
     empresa_service = EmpresaService()
 
+    print(f"Gestor ID: {gestor_id}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(status=status,codigo=codigo)
+    response = empresa_service.buscar_empresas(gestor_id = gestor_id, status=status,codigo=codigo)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Empresas não encontradas"})
@@ -324,8 +326,8 @@ def busca_talhao(id_talhao:int):
 
 @app.get("/talhoes")
 def busca_talhoes(id_empresa:int = Query(None, description="Empresa do talhao"),  
-                 status: str = Query(None, description="Status da Maquina"),
-                codigo: str = Query(None, description= "Nome/Codigo da Maquina")):
+                 status: str = Query(None, description="Status do Talhão"),
+                codigo: str = Query(None, description= "Nome/Codigo do Talhão")):
 
 
     talhao_service = TalhaoService()
@@ -439,14 +441,17 @@ def busca_operador(id: int)-> Usuario:
 
 
 @app.get("/operadores")
-def busca_operadores(status: str = Query(None, description="Status do Operador"),
-                   codigo: str = Query(None, description= "Nome/Codigo do Operador")):
+def busca_operadores(id_empresa: int  = Query(None, description="Empresa do Operador"),
+                    turno: str  = Query(None, description="Turno do Operador"),
+                    status: str = Query(None, description="Status do Operador"),
+                    codigo: str = Query(None, description= "Nome/Codigo do Operador")):
 
     operador_service = UsuarioService()
-
+    print(f"Empresa ID: {id_empresa}")
+    print(f"Turno: {turno}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = operador_service.buscar_operadores(status=status,codigo=codigo)
+    response = operador_service.buscar_operadores(empresa_id=id_empresa, turno=turno, status=status,codigo=codigo)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Operadores não encontrados"})

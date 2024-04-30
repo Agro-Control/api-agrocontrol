@@ -141,7 +141,7 @@ class UsuarioService:
 
         return operador
 
-    def buscar_operadores(self, codigo: str | None = None, status: str | None = None):
+    def buscar_operadores(self, empresa_id: int | None = None, turno: str | None = None, codigo: str | None = None, status: str | None = None):
         operadores = []
         
         with Database() as conn: 
@@ -155,6 +155,14 @@ class UsuarioService:
                         WHERE 1=1 and tipo = 'O'
                     """
 
+                if empresa_id:
+                    sql += "AND u.empresa_id = %s"
+                    params.append(empresa_id)
+
+                if turno:
+                    sql += " AND u.turno LIKE %s"
+                    params.append(f"%{turno}%")
+                
                 if codigo:
                     sql += " AND u.nome LIKE %s"
                     params.append(f"%{codigo}%")
@@ -211,8 +219,8 @@ class UsuarioService:
                         nome = %(nome)s,
                         turno = %(turno)s,
                         email = %(email)s,
-                        gestor_id = %(bairro)s,
-                        empresa_id = %(logradouro)s
+                        gestor_id = %(gestor_id)s,
+                        empresa_id = %(empresa_id)s
                         status = %(status)s,
                         matricula = %(matricula)s,       
                     WHERE id = %(id)s and tipo = 'O'
