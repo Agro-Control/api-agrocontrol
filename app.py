@@ -1,4 +1,5 @@
 from datetime import timedelta
+from fastapi import HTTPException
 from typing import Dict, List, Optional
 from fastapi import Depends, FastAPI, Request, Response, Query
 from fastapi.responses import JSONResponse
@@ -485,9 +486,15 @@ def atualiza_operador(operador: Usuario):
 def login(email: str, senha: str, usuario_service: UsuarioService = Depends()):
     usuario = usuario_service.validar_credenciais(email, senha)
     if usuario:
+        # Remover a senha do objeto de usuário
+        usuario.senha = None  # ou "" ou qualquer outro valor que você preferir
+
+        # Gerar token JWT
         tempo_token = timedelta(minutes=60)
         token = token_24horas(data={"sub": usuario.email}, expires_delta=tempo_token)
         
+        # Retorna o usuário junto com o token JWT
         return {"usuario": usuario, "token": token}
     else:
-        return JSONResponse(status_code=401, content={"error": "Credenciais inválidas"})
+        # Retornar manualmente o erro 401
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
