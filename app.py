@@ -70,7 +70,6 @@ def busca_ordem(id_ordem:int):
 def buscar_ordens(id_empresa: int = Query(None, description="Empresa pertencente"),
                     status: str = Query(None, description="Status da Unidade")):
 
-    
     ordem_service = OrdemService()
 
     response = ordem_service.busca_ordens_servicos(id_empresa=id_empresa, status=status)
@@ -447,14 +446,18 @@ def busca_operador(id: int)-> Usuario:
 def busca_operadores(id_empresa: int  = Query(None, description="Empresa do Operador"),
                     turno: str  = Query(None, description="Turno do Operador"),
                     status: str = Query(None, description="Status do Operador"),
-                    codigo: str = Query(None, description= "Nome/Codigo do Operador")):
-
+                    codigo: str = Query(None, description= "Nome/Codigo do Operador"),
+                    disponibilidade_ordem: bool = Query(None, description="Operadores diponiveis para nova ordem")):
+    
+    
     operador_service = UsuarioService()
     print(f"Empresa ID: {id_empresa}")
     print(f"Turno: {turno}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = operador_service.buscar_operadores(empresa_id=id_empresa, turno=turno, status=status,codigo=codigo)
+    print(f"Disponibilidade_ordem: {disponibilidade_ordem}")
+    
+    response = operador_service.buscar_operadores(empresa_id=id_empresa, turno=turno, status=status,codigo=codigo, disp_ordem=disponibilidade_ordem)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Operadores não encontrados"})

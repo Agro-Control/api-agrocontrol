@@ -142,7 +142,8 @@ class UsuarioService:
 
         return operador
 
-    def buscar_operadores(self, empresa_id: int | None = None, turno: str | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_operadores(self, empresa_id: int | None = None, turno: str | None = None, codigo: str | None = None, status: str | None = None, 
+                          disp_ordem: bool | None = None):
         operadores = []
         
         with Database() as conn: 
@@ -171,9 +172,14 @@ class UsuarioService:
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
-    
-                print(sql)
                 
+                if disp_ordem:
+                    sql += """ AND u.id not in (
+	                    SELECT oso.id_operador from ordem_servico_operador oso 
+	                    INNER JOIN ordem_servico os ON os.id = oso.id_ordem_servico 
+            	        WHERE os.status IN ('A', 'E')
+                    ) """
+                               
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()

@@ -66,7 +66,7 @@ class OrdemService:
                 sql = f"""
                     SELECT os.* , STRING_AGG(oso.id_operador::text, ',') operadores FROM ordem_servico os 
                     INNER JOIN ordem_servico_operador oso ON (oso.id_ordem_servico = os.id)
-                    WHERE 1=1
+                    WHERE 1=1 
                 """
                 
                 if id_empresa:
