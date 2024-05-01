@@ -29,7 +29,7 @@ class EmpresaService:
         return empresa
 
 ##################################################
-    def buscar_empresas(self, gestor_id: int | None = None, codigo: str | None = None, status: str | None = None , estado: str | None = None):
+    def buscar_empresas(self, codigo: str | None = None, status: str | None = None , estado: str | None = None):
         empresas = []
         
         with Database() as conn: 
@@ -54,10 +54,6 @@ class EmpresaService:
                 if estado:
                     sql += " AND e.estado = %s"
                     params.append(estado)
-
-                if gestor_id:
-                    sql += " AND e.gestor_id = %s"
-                    params.append(gestor_id)
 
                 print(sql)
                 

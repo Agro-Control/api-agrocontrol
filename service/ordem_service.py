@@ -58,7 +58,7 @@ class OrdemService:
                 ordem = OrdemServico(**result)
         return ordem
     
-    def busca_ordens_servicos(self, id_empresa:int | None, status: str | None = None):
+    def busca_ordens_servicos(self, id_empresa: int | None = None, status: str | None = None):
         ordens = []
         with Database() as conn: 
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:

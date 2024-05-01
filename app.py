@@ -204,18 +204,16 @@ def busca_empresa(id_empresa: int)-> Empresa:
 
 
 @app.get("/empresas")
-def busca_empresas(gestor_id: int = Query(None, description="Id do Gestor"),
-                   status: str = Query(None, description="Status da Empresa"),
+def busca_empresas(status: str = Query(None, description="Status da Empresa"),
                    codigo: str = Query(None, description= "Nome/Codigo da Empresa"),
                    estado: str = Query(None, description= "Nome do Estado da Empresa"),
                    ):
 
     empresa_service = EmpresaService()
 
-    print(f"Gestor ID: {gestor_id}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(gestor_id = gestor_id, status=status,codigo=codigo, estado=estado)
+    response = empresa_service.buscar_empresas(status=status,codigo=codigo, estado=estado)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Empresas não encontradas"})
