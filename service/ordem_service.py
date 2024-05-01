@@ -64,20 +64,20 @@ class OrdemService:
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
                 params = []
                 sql = f"""
-                    SELECT os.* ,STRING_AGG(oso.id_operador::text, ',') operadores FROM ordem_servico os 
+                    SELECT os.* , STRING_AGG(oso.id_operador::text, ',') operadores FROM ordem_servico os 
                     INNER JOIN ordem_servico_operador oso ON (oso.id_ordem_servico = os.id)
                     WHERE 1=1
                 """
                 
                 if id_empresa:
-                    sql += "AND os.id_empresa = %s"
+                    sql += " AND os.id_empresa = %s"
                     params.append(id_empresa)
 
                 if status:
-                    sql += "AND os.status = %s"
+                    sql += " AND os.status = %s"
                     params.append(status)
                 
-                sql += "GROUP BY os.id"
+                sql += " GROUP BY os.id"
 
                 cursor.execute(sql, params, prepare=True)
                 result = cursor.fetchall()
