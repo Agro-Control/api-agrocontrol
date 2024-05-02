@@ -8,15 +8,15 @@ from fastapi import Response, Query
 router = APIRouter()
 
 
-@router.get("/talhoes/{id_talhao}")
-def busca_talhao(id_talhao:int):
+@router.get("/talhoes/{talhao_id}")
+def busca_talhao(talhao_id:int):
 
-    if not id_talhao:
+    if not talhao_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     talhao_service = TalhaoService()
 
-    response = talhao_service.buscar_talhao(id_talhao)
+    response = talhao_service.buscar_talhao(talhao_id)
     
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})
@@ -25,14 +25,14 @@ def busca_talhao(id_talhao:int):
 
 
 @router.get("/talhoes")
-def busca_talhoes(id_empresa:int = Query(None, description="Empresa do talhao"),  
+def busca_talhoes(unidade_id:int = Query(None, description="Empresa do talhao"),  
                  status: str = Query(None, description="Status do Talhão"),
                 codigo: str = Query(None, description= "Nome/Codigo do Talhão")):
 
 
     talhao_service = TalhaoService()
 
-    response = talhao_service.buscar_talhoes(id_empresa=id_empresa, codigo=codigo, status=status)
+    response = talhao_service.buscar_talhoes(unidade_id=unidade_id, codigo=codigo, status=status)
     
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})

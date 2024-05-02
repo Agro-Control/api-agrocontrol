@@ -9,15 +9,15 @@ router = APIRouter()
 
 
 
-@router.get("/empresas/{id_empresa}", response_model=Empresa)
-def busca_empresa(id_empresa: int)-> Empresa:
+@router.get("/empresas/{empresa_id}", response_model=Empresa)
+def busca_empresa(empresa_id: int)-> Empresa:
     
-    if not id_empresa:
+    if not empresa_id:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
     
     empresa_service = EmpresaService()
 
-    response = empresa_service.buscar_empresa(id_empresa)
+    response = empresa_service.buscar_empresa(empresa_id)
     
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code= 403, content={"error": "Empresa não encontrada"})
@@ -29,13 +29,14 @@ def busca_empresa(id_empresa: int)-> Empresa:
 def busca_empresas(status: str = Query(None, description="Status da Empresa"),
                    codigo: str = Query(None, description= "Nome/Codigo da Empresa"),
                    estado: str = Query(None, description= "Nome do Estado da Empresa"),
+                   grupo_id: int = Query(None, description= "Grupo da Empresa")
                    ):
 
     empresa_service = EmpresaService()
 
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(status=status,codigo=codigo, estado=estado)
+    response = empresa_service.buscar_empresas(status=status,codigo=codigo, estado=estado, grupo_id=grupo_id)
 
     if not response:
         return JSONResponse(status_code= 403, content={"error": "Empresas não encontradas"})
@@ -72,12 +73,12 @@ def atualiza_empresa(empresa: Empresa):
 
 @router.get("/estados_empresa")
 def busca_estados_empresas(
-            id_grupo: int = Query(None, description="id do grupo empresarial"),
-            id_empresa: int = Query(None, description= "id da empresa")
+            grupo_id: int = Query(None, description="id do grupo empresarial"),
+            empresa_id: int = Query(None, description= "id da empresa")
         ):
 
     empresa_service = EmpresaService()
     
-    result = empresa_service.busca_estado_empresas(id_grupo, id_empresa)
+    result = empresa_service.busca_estado_empresas(grupo_id, empresa_id)
     
     return result

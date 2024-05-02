@@ -27,7 +27,7 @@ class TalhaoService:
  
         return talhao
 
-    def buscar_talhoes(self, id_empresa:int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_talhoes(self, unidade_id:int | None = None, codigo: str | None = None, status: str | None = None):
 
         talhoes = []
 
@@ -43,9 +43,9 @@ class TalhaoService:
                         WHERE 1=1
                     """
 
-                if id_empresa:
-                    sql += "AND t.empresa_id = %s"
-                    params.append(id_empresa)
+                if unidade_id:
+                    sql += "AND t.unidade_id = %s"
+                    params.append(unidade_id)
                     
                 if codigo:
                     sql += " AND t.codigo LIKE %s"
@@ -75,9 +75,9 @@ class TalhaoService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO talhao (
-                        codigo, tamanho, gestor_id, empresa_id
+                        codigo, tamanho, unidade_id
                         )
-                    VALUES (%(codigo)s, %(tamanho)s, %(gestor_id)s, %(empresa_id)s)
+                    VALUES (%(codigo)s, %(tamanho)s, %(unidade_id)s)
                 """
                 try:
                     cursor.execute(insert_query, talhao.dict(), prepare=True)
@@ -104,7 +104,7 @@ class TalhaoService:
                         tamanho = %(tamanho)s,
                         status = %(status)s
                     WHERE id = %(id)s
-                    and empresa_id = %(empresa_id)s
+                    and unidade_id = %(unidade_id)s
                 """
                 
                 try:

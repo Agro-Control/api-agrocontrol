@@ -8,15 +8,15 @@ from fastapi import Response, Query
 
 router = APIRouter()
 
-@router.get("/maquinas/{id_maquina}")
-def busca_maquina(id_maquina: int):
+@router.get("/maquinas/{maquina_id}")
+def busca_maquina(maquina_id: int):
 
-    if not id_maquina:
+    if not maquina_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
     maquina_service = MaquinaService()
 
-    response = maquina_service.buscar_maquina(id_maquina)
+    response = maquina_service.buscar_maquina(maquina_id)
     
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Maquina não encontrada"})
@@ -25,13 +25,13 @@ def busca_maquina(id_maquina: int):
 
 
 @router.get("/maquinas")
-def busca_maquinas(id_empresa: int = Query(None, description="Empresa da Maquina"), 
+def busca_maquinas(unidade_id: int = Query(None, description="Unidade da Maquina"), 
                    status: str = Query(None, description="Status da Maquina"),
                    codigo: str = Query(None, description= "Nome/Codigo da Maquina")):
 
     maquina_service = MaquinaService()
 
-    response = maquina_service.buscar_maquinas(id_empresa=id_empresa, status= status, codigo=codigo)
+    response = maquina_service.buscar_maquinas(unidade_id=unidade_id, status= status, codigo=codigo)
     
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Maquina não encontrada"})

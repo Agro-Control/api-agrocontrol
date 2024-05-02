@@ -27,7 +27,7 @@ class MaquinaService:
  
         return maquina
 
-    def buscar_maquinas(self, id_empresa:int | None, codigo: str | None = None, status: str | None = None):
+    def buscar_maquinas(self, unidade_id:int | None, codigo: str | None = None, status: str | None = None):
 
         maquinas = []
         with Database() as conn: 
@@ -42,9 +42,9 @@ class MaquinaService:
                         WHERE 1=1
                     """
                 
-                if id_empresa:
-                    sql += "AND m.empresa_id = %s"
-                    params.append(id_empresa)
+                if unidade_id:
+                    sql += "AND m.unidade_id = %s"
+                    params.append(unidade_id)
 
                 if codigo:
                     sql += " AND m.nome LIKE %s"
@@ -75,9 +75,9 @@ class MaquinaService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO maquina (
-                        nome, fabricante, modelo, capacidade_operacional, gestor_id, empresa_id
+                        nome, fabricante, modelo, capacidade_operacional, unidade_id
                         )
-                    VALUES (%(nome)s, %(fabricante)s, %(modelo)s, %(capacidade_operacional)s, %(gestor_id)s, %(empresa_id)s)
+                    VALUES (%(nome)s, %(fabricante)s, %(modelo)s, %(capacidade_operacional)s,  %(unidade_id)s)
                 """
                 try:
                     cursor.execute(insert_query, maquina.dict(), prepare=True)

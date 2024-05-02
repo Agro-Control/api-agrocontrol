@@ -9,15 +9,15 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 
-@router.get("/unidades/{id_unidade}", response_model=Unidade)
-def busca_unidade(id_unidade: int)-> Unidade:
+@router.get("/unidades/{unidade_id}", response_model=Unidade)
+def busca_unidade(unidade_id: int)-> Unidade:
     
-    if not id_unidade:
+    if not unidade_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
     unidade_service = UnidadeService()
 
-    response = unidade_service.buscar_unidade(id_unidade)
+    response = unidade_service.buscar_unidade(unidade_id)
     
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code= 404, content={"error": "Unidade não encontrada"})
@@ -26,13 +26,13 @@ def busca_unidade(id_unidade: int)-> Unidade:
 
 
 @router.get("/unidades")
-def busca_unidades(id_empresa: int = Query(None, description="Empresa pertencente"),
+def busca_unidades(empresa_id: int = Query(None, description="Empresa pertencente"),
                     status: str = Query(None, description="Status da Unidade"),
                     codigo: str = Query(None, description= "Nome/Codigo da Unidade")):
     
     unidade_service = UnidadeService()
 
-    response = unidade_service.buscar_unidades(id_empresa=id_empresa, status=status,codigo=codigo)
+    response = unidade_service.buscar_unidades(empresa_id=empresa_id, status=status,codigo=codigo)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Unidades não encontradas"})

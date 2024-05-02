@@ -5,7 +5,7 @@ from model.empresa_model import Empresa
 
 class EmpresaService:
     
-    def buscar_empresa(self, id_empresa: int):
+    def buscar_empresa(self, empresa_id: int):
         empresa = {}
         
         with Database() as conn: 
@@ -17,7 +17,7 @@ class EmpresaService:
                         where e.id = %s ;
                     """
                 
-                cursor.execute(sql, (id_empresa, ), prepare=True)
+                cursor.execute(sql, (empresa_id, ), prepare=True)
                 
                 result = cursor.fetchone()
             
@@ -29,7 +29,7 @@ class EmpresaService:
         return empresa
 
 ##################################################
-    def buscar_empresas(self, codigo: str | None = None, status: str | None = None , estado: str | None = None):
+    def buscar_empresas(self, codigo: str | None = None, grupo_id: int | None = None, status: str | None = None , estado: str | None = None):
         empresas = []
         
         with Database() as conn: 
@@ -54,6 +54,9 @@ class EmpresaService:
                 if estado:
                     sql += " AND e.estado = %s"
                     params.append(estado)
+                
+                if grupo_id:
+                    sql += " AND grupo_id = %s"
 
                 print(sql)
                 
@@ -78,10 +81,10 @@ class EmpresaService:
                 insert_query = """
                     INSERT INTO empresa (
                         nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro,
-                        numero, complemento, data_criacao, telefone_responsavel, email_responsavel, nome_responsavel, gestor_id, grupo_empresarial_id
+                        numero, complemento, grupo_id
                     )
                     VALUES (%(nome)s, %(cnpj)s, %(telefone)s, %(cep)s, %(estado)s, %(cidade)s, %(bairro)s, %(logradouro)s,
-                    %(numero)s, %(complemento)s, %(data_criacao)s, %(telefone_responsavel)s, %(email_responsavel)s, %(nome_responsavel)s, %(gestor_id)s, %(grupo_empresarial_id)s)
+                    %(numero)s, %(complemento)s, %(grupo_id)s)
                 """
                 try:
                     cursor.execute(insert_query, empresa.dict(), prepare=True)
@@ -113,11 +116,7 @@ class EmpresaService:
                         logradouro = %(logradouro)s,
                         numero = %(numero)s,
                         complemento = %(complemento)s,
-                        status = %(status)s,
-                        data_criacao = %()s,
-                        telefone_responsavel = %(telefone_responsavel)s,
-                        email_responsavel = %(email_responsavel)s,
-                        nome_responsavel = %(nome_responsavel)s
+                        status = %(status)s
                     WHERE id = %(id)s
                 """
                 
@@ -137,7 +136,7 @@ class EmpresaService:
         return empresa
 
 
-    def busca_estado_empresas(self, id_grupo: int | None = None, id_empresa: int | None = None):
+    def busca_estado_empresas(self, grupo_id: int | None = None, empresa_id: int | None = None):
         estados = {}
 
         with Database() as conn: 
@@ -149,17 +148,17 @@ class EmpresaService:
                     WHERE 1=1
                 """
 
-                if id_grupo:
-                    sql += " AND grupo_empresarial_id = %s"
+                if grupo_id:
+                    sql += " AND grupo_id = %s"
 
-                if id_empresa:
+                if empresa_id:
                     sql += " AND id = %s"
 
                 
                 sql += " GROUP BY estado";
                 
                 try:
-                    cursor.execute(sql, (id_grupo, ), prepare= True)
+                    cursor.execute(sql, (grupo_id, ), prepare= True)
                 except Exception as e:
                      raise DatabaseError(e)
                 

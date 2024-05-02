@@ -4,7 +4,7 @@ from model.unidade_model import Unidade
 
 class UnidadeService:
     
-    def buscar_unidade(self, id_unidade: int):
+    def buscar_unidade(self, unidade_id: int):
         unidade = {}
         
         with Database() as conn: 
@@ -16,7 +16,7 @@ class UnidadeService:
                         WHERE u.id = %s ;
                     """
                 
-                cursor.execute(sql, (id_unidade, ), prepare=True)
+                cursor.execute(sql, (unidade_id, ), prepare=True)
                 
                 result = cursor.fetchone()
             
@@ -28,7 +28,7 @@ class UnidadeService:
         return unidade
 
 
-    def buscar_unidades(self, id_empresa:int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_unidades(self, empresa_id:int | None = None, codigo: str | None = None, status: str | None = None):
         unidades = []
         
         with Database() as conn: 
@@ -42,9 +42,9 @@ class UnidadeService:
                         WHERE 1=1
                     """
                 
-                if id_empresa:
+                if empresa_id:
                     sql += "AND u.empresa_id = %s"
-                    params.append(id_empresa)
+                    params.append(empresa_id)
 
                 if codigo:
                     sql += " AND u.nome LIKE %s"
@@ -74,10 +74,10 @@ class UnidadeService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO unidade (
-                        nome, cnpj, cep, estado, cidade, bairro, logradouro,
+                        nome, cep, estado, cidade, bairro, logradouro,
                         numero, complemento, gestor_id, empresa_id
                     )
-                    VALUES (%(nome)s, %(cnpj)s, %(cep)s, %(estado)s, %(cidade)s, %(bairro)s, %(logradouro)s,
+                    VALUES (%(nome)s, %(cep)s, %(estado)s, %(cidade)s, %(bairro)s, %(logradouro)s,
                     %(numero)s, %(complemento)s, %(gestor_id)s, %(empresa_id)s)
                 """
                 try:
@@ -101,7 +101,6 @@ class UnidadeService:
                     UPDATE Unidade
                     SET
                         nome = %(nome)s,
-                        cnpj = %(cnpj)s,
                         cep = %(cep)s,
                         estado = %(estado)s,
                         cidade = %(cidade)s,

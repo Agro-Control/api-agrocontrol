@@ -142,7 +142,7 @@ class UsuarioService:
 
         return operador
 
-    def buscar_operadores(self, empresa_id: int | None = None, turno: str | None = None, codigo: str | None = None, status: str | None = None, 
+    def buscar_operadores(self, unidade_id: int | None = None, turno: str | None = None, codigo: str | None = None, status: str | None = None, 
                           disp_ordem: bool | None = None):
         operadores = []
         
@@ -157,9 +157,9 @@ class UsuarioService:
                         WHERE 1=1 and tipo = 'O'
                     """
 
-                if empresa_id:
-                    sql += "AND u.empresa_id = %s"
-                    params.append(empresa_id)
+                if unidade_id:
+                    sql += "AND u.unidade_id = %s"
+                    params.append(unidade_id)
 
                 if turno:
                     sql += " AND u.turno LIKE %s"
@@ -199,9 +199,9 @@ class UsuarioService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, email, matricula, turno, gestor_id, empresa_id, tipo
+                        cpf, nome, email, matricula, turno, gestor_id, unidade_id, tipo
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(empresa_id)s, 'O')
+                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(unidade_id)s, 'O')
                 """
                 try:
                     cursor.execute(insert_query, operador.dict(), prepare=True)
@@ -227,7 +227,7 @@ class UsuarioService:
                         turno = %(turno)s,
                         email = %(email)s,
                         gestor_id = %(gestor_id)s,
-                        empresa_id = %(empresa_id)s,
+                        unidade_id = %(unidade_id)s,
                         status = %(status)s,
                         matricula = %(matricula)s,       
                     WHERE id = %(id)s and tipo = 'O'

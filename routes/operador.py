@@ -24,7 +24,7 @@ def busca_operador(id: int)-> Usuario:
 
 
 @router.get("/operadores")
-def busca_operadores(id_empresa: int  = Query(None, description="Empresa do Operador"),
+def busca_operadores(unidade_id: int  = Query(None, description="Unidade do Operador"),
                     turno: str  = Query(None, description="Turno do Operador"),
                     status: str = Query(None, description="Status do Operador"),
                     codigo: str = Query(None, description= "Nome/Codigo do Operador"),
@@ -32,13 +32,13 @@ def busca_operadores(id_empresa: int  = Query(None, description="Empresa do Oper
     
     
     operador_service = UsuarioService()
-    print(f"Empresa ID: {id_empresa}")
+    print(f"Unidade ID: {unidade_id}")
     print(f"Turno: {turno}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
     print(f"Disponibilidade_ordem: {disponibilidade_ordem}")
     
-    response = operador_service.buscar_operadores(empresa_id=id_empresa, turno=turno, status=status,codigo=codigo, disp_ordem=disponibilidade_ordem)
+    response = operador_service.buscar_operadores(unidade_id=unidade_id, turno=turno, status=status,codigo=codigo, disp_ordem=disponibilidade_ordem)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Operadores não encontrados"})
