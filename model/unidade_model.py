@@ -4,7 +4,6 @@ from datetime import datetime
 class Unidade(BaseModel):
     id: int | None = None
     nome: str | None = None
-    cnpj:  str | None = None
     cep:  str | None = None
     estado:  str | None = None
     cidade:  str | None = None

@@ -4,17 +4,18 @@ from typing import List
 
 class OrdemServico(BaseModel):
     id: int | None = None
+    data_criacao: datetime | None = None
     data_inicio: datetime | None = None
-    status: str | None = None
     data_fim: datetime | None = None
+    status: str | None = None
     velocidade_minima: float | None = None
     velocidade_maxima: float | None = None
     rpm: int | None = None
-    id_gestor: int | None = None
-    id_talhao: int | None = None
-    id_unidade: int | None = None
-    id_empresa: int | None = None
-    id_maquina: int | None = None
+    gestor_id: int | None = None
+    talhao_id: int | None = None
+    unidade_id: int | None = None
+    empresa_id: int | None = None
+    maquina_id: int | None = None
     operadores_ids: List[int] = []
 
 
