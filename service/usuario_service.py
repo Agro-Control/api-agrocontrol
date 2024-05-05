@@ -179,8 +179,8 @@ class UsuarioService:
                 
                 if disp_ordem:
                     sql += """ AND u.id not in (
-	                    SELECT oso.id_operador from ordem_servico_operador oso 
-	                    INNER JOIN ordem_servico os ON os.id = oso.id_ordem_servico 
+	                    SELECT oso.operador_id from ordem_servico_operador oso 
+	                    INNER JOIN ordem_servico os ON os.id = oso.ordem_servico_id 
             	        WHERE os.status IN ('A', 'E')
                     ) """
                                

@@ -19,7 +19,7 @@ class OrdemService:
                             os.velocidade_maxima,
                             os.rpm 
                         from ordem_servico as os 
-                        where os.id_maquina = %s 
+                        where os.maquina_id = %s 
                         and os.status = 'A';
                     """
             
@@ -42,8 +42,8 @@ class OrdemService:
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
 
                 sql = f"""
-                    SELECT os.* ,STRING_AGG(oso.id_operador::text, ',') operadores FROM ordem_servico os 
-                    INNER JOIN ordem_servico_operador oso ON (oso.id_ordem_servico = os.id)
+                    SELECT os.* ,STRING_AGG(oso.operador_id::text, ',') operadores FROM ordem_servico os 
+                    INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
                     WHERE os.id = %s
                     GROUP BY os.id
                 """
@@ -64,8 +64,8 @@ class OrdemService:
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
                 params = []
                 sql = f"""
-                    SELECT os.* , STRING_AGG(oso.id_operador::text, ',') operadores FROM ordem_servico os 
-                    INNER JOIN ordem_servico_operador oso ON (oso.id_ordem_servico = os.id)
+                    SELECT os.* , STRING_AGG(oso.operador_id::text, ',') operadores FROM ordem_servico os 
+                    INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
                     WHERE 1=1 
                 """
                 
@@ -100,11 +100,10 @@ class OrdemService:
             with conn.cursor() as cursor:
                 # Query de insert
                 insert_query = """
-                    INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, rpm, id_gestor,id_empresa, id_unidade, id_talhao, id_maquina)
-                    VALUES (%(velocidade_minima)s, %(velocidade_maxima)s, %(rpm)s, %(id_gestor)s, %(id_empresa)s, %(id_unidade)s, %(id_talhao)s, %(id_maquina)s)
+                    INSERT INTO Ordem_Servico (data_inicio, velocidade_minima, velocidade_maxima, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
+                    VALUES (%(data_inicio)s, %(velocidade_minima)s, %(velocidade_maxima)s, %(rpm)s, %(gestor_id)s, %(empresa_id)s, %(unidade_id)s, %(talhao_id)s, %(maquina_id)s)
                     RETURNING id
                 """
-
                 try:
                     cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
                     id_ultimo_registro = cursor.fetchone()[0]
@@ -113,7 +112,7 @@ class OrdemService:
 
 
                     insert_query = f"""
-                        INSERT INTO Ordem_Servico_Operador (id_ordem_servico, id_operador)
+                        INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
                         VALUES { ", ".join(values)};
                     """
                     # print(insert_query)

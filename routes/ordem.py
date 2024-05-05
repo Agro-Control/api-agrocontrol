@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 from typing import Dict
 from fastapi import Response, Query
 
-
 router = APIRouter()
 
 @router.get("/")
