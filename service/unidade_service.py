@@ -28,7 +28,7 @@ class UnidadeService:
         return unidade
 
 
-    def buscar_unidades(self, empresa_id:int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_unidades(self, empresa_id:int | None = None, grupo_id: int | None = None, codigo: str | None = None, status: str | None = None):
         unidades = []
         
         with Database() as conn: 
@@ -45,6 +45,10 @@ class UnidadeService:
                 if empresa_id:
                     sql += "AND u.empresa_id = %s"
                     params.append(empresa_id)
+
+                if empresa_id:
+                    sql += "AND u.grupo_id = %s"
+                    params.append(grupo_id)
 
                 if codigo:
                     sql += " AND u.nome LIKE %s"

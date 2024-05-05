@@ -28,7 +28,7 @@ class UsuarioService:
  
         return gestor
 
-    def buscar_gestores(self, codigo: str | None = None, status: str | None = None):
+    def buscar_gestores(self, grupo_id: int | None = None, codigo: str | None = None, status: str | None = None):
         gestores = []
         
         with Database() as conn: 
@@ -49,6 +49,10 @@ class UsuarioService:
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
+                
+                if grupo_id:
+                    sql += " AND u.grupo_id = %s"
+                    params.append(grupo_id)
     
                 print(sql)
                 

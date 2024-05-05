@@ -57,6 +57,7 @@ class EmpresaService:
                 
                 if grupo_id:
                     sql += " AND grupo_id = %s"
+                    params.append(grupo_id)
 
                 print(sql)
                 

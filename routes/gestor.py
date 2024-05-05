@@ -24,14 +24,16 @@ def busca_gestor(id: int)-> Usuario:
 
 
 @router.get("/gestores")
-def busca_gestores(status: str = Query(None, description="Status do Gestor"),
+def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empresarial do Gestor"),
+                   status: str = Query(None, description="Status do Gestor"),
                    codigo: str = Query(None, description= "Nome/Codigo do Gestor")):
 
     gestor_service = UsuarioService()
 
+    print(f"Grupo_id: {grupo_id}")
     print(f"Codigo: {codigo}")
     print(f"Status: {status}")
-    response = gestor_service.buscar_gestores(status=status,codigo=codigo)
+    response = gestor_service.buscar_gestores(grupo_id=grupo_id,status=status,codigo=codigo)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Gestores não encontrados"})

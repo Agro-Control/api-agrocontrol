@@ -26,13 +26,14 @@ def busca_unidade(unidade_id: int)-> Unidade:
 
 
 @router.get("/unidades")
-def busca_unidades(empresa_id: int = Query(None, description="Empresa pertencente"),
+def busca_unidades( grupo_id: int = Query(None, description="Grupo pertencente"),
+                    empresa_id: int = Query(None, description="Empresa pertencente"),
                     status: str = Query(None, description="Status da Unidade"),
                     codigo: str = Query(None, description= "Nome/Codigo da Unidade")):
     
     unidade_service = UnidadeService()
 
-    response = unidade_service.buscar_unidades(empresa_id=empresa_id, status=status,codigo=codigo)
+    response = unidade_service.buscar_unidades(grupo_id=grupo_id,empresa_id=empresa_id, status=status,codigo=codigo)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Unidades não encontradas"})
