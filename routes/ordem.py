@@ -12,13 +12,13 @@ async def root():
     return {"message": "Hello word 2"}
 
 @router.get("/ordem/maquina/{id_maquina}/ativa")
-def ordem_maquina_ativa(id_maquina: int):
+def ordem_maquina_ativa(maquina_id: int):
     
-    if not id_maquina:
+    if not maquina_id:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
 
     ordem_service = OrdemService()
-    response = ordem_service.busca_ordem_ativa_maquina(id_maquina)
+    response = ordem_service.busca_ordem_ativa_maquina(maquina_id)
     
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code=404, content={"error": "Ordem de servico não encontrada"})
@@ -41,12 +41,12 @@ def busca_ordem(id_ordem:int):
 
 
 @router.get("/ordens")
-def buscar_ordens(id_empresa: int = Query(None, description="Empresa pertencente"),
+def buscar_ordens(empresa_id: int = Query(None, description="Empresa pertencente"),
                     status: str = Query(None, description="Status da Unidade")):
 
     ordem_service = OrdemService()
 
-    response = ordem_service.busca_ordens_servicos(id_empresa=id_empresa, status=status)
+    response = ordem_service.busca_ordens_servicos(empresa_id=empresa_id, status=status)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Ordens não encontradas"})

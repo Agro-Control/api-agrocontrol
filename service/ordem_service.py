@@ -6,7 +6,7 @@ from model.ordem_de_servico_model import OrdemServico
 
 class OrdemService:
     
-    def busca_ordem_ativa_maquina(self, id_maquina: int): 
+    def busca_ordem_ativa_maquina(self, maquina_id: int): 
         ordem = {}
 
         with Database() as conn: 
@@ -24,7 +24,7 @@ class OrdemService:
                     """
             
                 #quando model estiver pronta usar aqui
-                cursor.execute(sql, (id_maquina,), prepare=True)
+                cursor.execute(sql, (maquina_id,), prepare=True)
                 
                 result = cursor.fetchone()
             
@@ -58,7 +58,7 @@ class OrdemService:
                 ordem = OrdemServico(**result)
         return ordem
     
-    def busca_ordens_servicos(self, id_empresa: int | None = None, status: str | None = None):
+    def busca_ordens_servicos(self, empresa_id: int | None = None, status: str | None = None):
         ordens = []
         with Database() as conn: 
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
@@ -69,9 +69,9 @@ class OrdemService:
                     WHERE 1=1 
                 """
                 
-                if id_empresa:
-                    sql += " AND os.id_empresa = %s"
-                    params.append(id_empresa)
+                if empresa_id:
+                    sql += " AND os.empresa_id = %s"
+                    params.append(empresa_id)
 
                 if status:
                     sql += " AND os.status = %s"
