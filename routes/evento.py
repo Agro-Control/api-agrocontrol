@@ -28,8 +28,9 @@ async def eventos(request: Request):
     if not data:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
     
-    ordem_service = OrdemService()
-    await ordem_service.insere_evento(data)
+    # ordem_service = OrdemService()
+    # await ordem_service.insere_evento(data)
+    print(data, flush=True)
     return Response(status_code=204)
 
 
