@@ -69,7 +69,7 @@ def login(login: Login):
 
 # rota para revalidar usuario logado, deve morrer dps
 @app.get("/usersession/{id}")
-def user_logado(id:int):
+def user_logado(id: int):
 
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -79,6 +79,7 @@ def user_logado(id:int):
 
     if not usuario:
         raise HTTPException(status_code=401, detail="Usuario inválido")
-    
+
     usuario.senha = None
+
     return usuario

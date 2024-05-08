@@ -260,7 +260,7 @@ class UsuarioService:
                            FROM Usuario
                            WHERE id = %s;
                          """
-                cursor.execute(sql, (id), prepare=True)
+                cursor.execute(sql, (id,), prepare=True)
 
                 result = cursor.fetchone()
 
