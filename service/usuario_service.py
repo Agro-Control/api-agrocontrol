@@ -250,6 +250,24 @@ class UsuarioService:
                     return {}
     
         return operador
+
+    # temporario
+    def busca_usuario(self, id:int):
+        with Database() as conn:
+            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+                sql = """
+                           SELECT *
+                           FROM Usuario
+                           WHERE id = %s;
+                         """
+                cursor.execute(sql, (id), prepare=True)
+
+                result = cursor.fetchone()
+
+                if result:
+                    return Usuario(**result)
+                else:
+                    return None
     
     def validar_credenciais(self, email: str, senha: str) -> Optional[Usuario]:
         with Database() as conn: 
