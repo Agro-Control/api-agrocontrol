@@ -34,8 +34,10 @@ class Event:
     def set_new_duration(self):
         self.duration = random.uniform(self.min_duration, self.max_duration)
 
-    def set_datas(self, data_inicio=None, data_fim=None):
+    def set_data_inicio(self, data_inicio):
         self.data_inicio = data_inicio
+
+    def set_data_fim(self,  data_fim):
         self.data_fim = data_fim
 
 
@@ -85,7 +87,7 @@ class EventSimulator(threading.Thread):
                 Event("aguardando transbordo", 1, 2, 0.3),
                 Event("manutencao", 1, 2, 0.2),
                 Event("clima", 1, 2, 0.01),
-                Event("abastecimento", 1, 2, 0.01),
+                Event("abastecimento", 1, 2, 0.1),
                 Event("troca de turno", 1, 2),
                 Event("fim de ordem", probability=0.01)
             ]
@@ -102,18 +104,23 @@ class EventSimulator(threading.Thread):
         while self.runnig:
 
             # gerar novo evento
-            current_event = self.get_next_event_v2(old_event)
+            current_event = self.get_next_event(old_event)
             current_event.set_new_duration()
-            current_event.set_datas(data_inicio=datetime.datetime.now())
+            current_event.set_data_inicio(data_inicio=datetime.datetime.now())
 
             if current_event.name in ["fim de ordem", "troca de turno"]:
-                current_event.set_datas(data_fim=datetime.datetime.now())
+                current_event.set_data_fim(data_fim=datetime.datetime.now())
                 self.send_event(current_event)
                 break
 
+            if current_event.name == "clima":
+                self.clima_event = False
+            elif current_event.name == "abastecimento":
+                self.abastecido = True
+
             if old_event:
                 if old_event.name != current_event.name:
-                    old_event.set_datas(data_fim=current_event.data_fim)
+                    old_event.set_data_fim(data_fim=datetime.datetime.now())
 
                     self.send_event(old_event)
 
@@ -126,11 +133,11 @@ class EventSimulator(threading.Thread):
 
         print(f"Ordem [{self.ordem.id_}] simulador encerrado!", flush=True)
 
-    def get_next_event(self):
-        event_list = self.events["automaticos"] if random.random() < 0.7 else self.events["manuais"]
-        return random.choices(event_list, [event.probability for event in event_list])[0]
+    # def get_next_event(self):
+    #     event_list = self.events["automaticos"] if random.random() < 0.7 else self.events["manuais"]
+    #     return random.choices(event_list, [event.probability for event in event_list])[0]
 
-    def get_next_event_v2(self, old_event):
+    def get_next_event(self, old_event):
 
         #  regras malditas para ter coerencia nos eventos
 
@@ -163,6 +170,9 @@ class EventSimulator(threading.Thread):
                 if event.name == "clima" and not self.clima_event:
                     continue
 
+                if event.name == "abastecimento" and self.abastecido:
+                    continue
+
                 event_list.append(event)
 
         return random.choices(event_list, [event.probability for event in event_list])[0]
@@ -174,12 +184,13 @@ class EventSimulator(threading.Thread):
                 "operador": self.ordem.operador.id_,
                 "maquina": self.ordem.maquina.id_,
                 "descricao": event.name,
-                "data_inicio": event.data_inicio,
-                "data_fim": event.data_fim
+                "data_inicio": event.data_inicio.isoformat(),
+                "data_fim": event.data_fim.isoformat()
             }
+
             response = requests.post('http://api:5000/eventos', data=json.dumps(data))
             if response:
-                print(f"Evento salvo: {data['descricao']} [OPERADOR] {self.ordem.operador.id_},"
+                print(f"Evento salvo: {data['descricao']} [ORDEM] {self.ordem.id_}, [OPERADOR] {self.ordem.operador.id_},"
                       f" [TURNO] {self.ordem.operador.turno}, [MAQUINA] {self.ordem.maquina.id_}",
                     flush=True)
 
@@ -195,10 +206,9 @@ class Deamon:
         signal.signal(signal.SIGTERM, self.down)
 
     def start(self):
-        print("Start Deamon")
         self.runnig = True
         while self.runnig:
-
+            print("Running all time...")
             # consultar as ordem ativas junto com os operadores, buscar maquina, etc
             try:
                 with psycopg.connect(DB_CONN_STR, row_factory=dict_row) as db:
@@ -232,6 +242,7 @@ class Deamon:
                                 self.ordens_ativas[row['id']] = simulador_eventos
             except:
                 print("Deu ruim", flush=True)
+
             time.sleep(60)
 
     def down(self, signumber=None, stackframe=None):
@@ -246,7 +257,7 @@ class Deamon:
 
     def get_turno(self):
         now = datetime.datetime.now()
-        if 8 >= now.hour < 16:
+        if 8 <= now.hour < 16:
             return 'M'
         elif 16 >= now.hour < 24:
             return 'T'

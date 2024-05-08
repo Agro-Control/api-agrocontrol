@@ -36,19 +36,27 @@ services:
       retries: 5
 
   api:
-    build:
-      context: .
-    container_name: api
-    ports:
-      - "5000:5000"
+     build:
+       context: .
+     container_name: api
+     ports:
+       - "5000:5000"
+     networks:
+       - agrocontrol
+     depends_on:
+       postgresdb:
+         condition: service_healthy
+       mongodb:
+         condition: service_healthy
+
+  simulador:
+    build: ./simulador
+    container_name: simulador
     networks:
       - agrocontrol
     depends_on:
-      postgresdb:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-  
+       - api
+
 networks:
   agrocontrol:
     driver: bridge

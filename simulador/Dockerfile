@@ -3,4 +3,4 @@ WORKDIR /app
 COPY ./requirements.txt /app
 RUN pip install -r requirements.txt
 COPY . .
-ENTRYPOINT ["python3", "simulador.py", "--start"]
+ENTRYPOINT ["python3", "-u", "simulador.py", "--start"]
