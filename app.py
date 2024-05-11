@@ -12,8 +12,7 @@ from routes.unidade import router as unidade_router
 from routes.empresa import router as empresa_router
 from routes.maquina import router as maquina_router
 from routes.talhao import router as talhao_router
-from routes.gestor import router as gestor_router
-from routes.operador import router as operador_router
+from routes.usuario import router as usuario_router
 from routes.evento import router as evento_router
 from routes.grupo import router as grupo_router
 
@@ -35,8 +34,7 @@ app.include_router(unidade_router)
 app.include_router(empresa_router)
 app.include_router(maquina_router)
 app.include_router(talhao_router)
-app.include_router(gestor_router)
-app.include_router(operador_router)
+app.include_router(usuario_router)
 app.include_router(evento_router)
 app.include_router(grupo_router)
 

@@ -96,7 +96,7 @@ class UsuarioService:
         
         with Database() as conn: 
             with conn.cursor() as cursor: 
-        # Query de update
+                # Query de update
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -268,6 +268,52 @@ class UsuarioService:
                     return Usuario(**result)
                 else:
                     return None
+
+    def busca_usuarios(self, grupo_id: int = None, empresa_id: int = None, unidade_id: int = None, status: str = None,
+                       tipo: str = None):
+        usuarios = []
+        with Database() as conn:
+            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+                params = []
+                sql = """
+                           SELECT *
+                           FROM Usuario u
+                           WHERE 1=1
+                         """
+
+                if grupo_id:
+                    sql += " AND u.grupo_id = %s"
+                    params.append(grupo_id)
+
+                if empresa_id:
+                    sql += " AND u.empresa_id = %s"
+                    params.append(empresa_id)
+
+                if unidade_id:
+                    sql += " AND u.unidade_id = %s"
+                    params.append(unidade_id)
+
+                if status:
+                    sql += " AND u.status = %s"
+                    params.append(status)
+
+                if tipo:
+                    sql += " AND u.tipo = %s"
+                    params.append(tipo)
+
+                cursor.execute(sql, params, prepare=True)
+                result = cursor.fetchall()
+
+                if not result:
+                    return usuarios
+
+                for row in result:
+                    usuarios.append(Usuario(**row))
+
+        return usuarios
+
+
+
     
     def validar_credenciais(self, login: str, senha: str) -> Optional[Usuario]:
         with Database() as conn: 
