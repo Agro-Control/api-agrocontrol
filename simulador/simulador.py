@@ -10,6 +10,7 @@ import signal
 import os
 import argparse
 import requests
+import math
 
 DB_CONN_STR = """
     dbname=postgres
@@ -22,6 +23,7 @@ DB_CONN_STR = """
 
 class Event:
     def __init__(self, name, min_duration=0, max_duration=0, probability=0):
+        self.id = None
         self.name = name
         self.min_duration = min_duration
         self.max_duration = max_duration
@@ -32,7 +34,7 @@ class Event:
         self.data_fim = None
 
     def set_new_duration(self):
-        self.duration = random.uniform(self.min_duration, self.max_duration)
+        self.duration = math.ceil(random.uniform(self.min_duration, self.max_duration))
 
     def set_data_inicio(self, data_inicio):
         self.data_inicio = data_inicio
@@ -79,7 +81,7 @@ class EventSimulator(threading.Thread):
 
         self.events = {
             "automaticos": [
-                Event("operacao", 1, 5, 0.7),
+                Event("operacao", 5, 10, 0.7),
                 Event("transbordo", 1, 5, 0.1),
                 Event("deslocamento", 1, 5, 0.2),
             ],
@@ -118,36 +120,26 @@ class EventSimulator(threading.Thread):
             elif current_event.name == "abastecimento":
                 self.abastecido = True
 
-            if old_event:
-                if old_event.name != current_event.name:
-                    old_event.set_data_fim(data_fim=datetime.datetime.now())
+            # enviar esse novo evento gerado e recuperar o id dele
+            current_event.id = self.send_event(current_event)
 
-                    self.send_event(old_event)
+            if old_event and old_event.name != current_event.name:
+                old_event.set_data_fim(data_fim=datetime.datetime.now())
+                self.send_event(old_event, "PUT")
 
-                    old_event = current_event
+            # else:
 
-            else:
-                old_event = current_event
+            old_event = current_event
 
             time.sleep(current_event.duration)
 
         print(f"Ordem [{self.ordem.id_}] simulador encerrado!", flush=True)
 
-    # def get_next_event(self):
-    #     event_list = self.events["automaticos"] if random.random() < 0.7 else self.events["manuais"]
-    #     return random.choices(event_list, [event.probability for event in event_list])[0]
-
     def get_next_event(self, old_event):
 
         #  regras malditas para ter coerencia nos eventos
 
-        if (not old_event or
-                old_event.name == "manutencao" or
-                old_event.name == "abastecimento" or
-                old_event.name == "clima" or
-                old_event.name == "transbordo" or
-                old_event.name == "deslocamento"
-        ):
+        if not old_event or old_event.name in ["manutencao", "abastecimento", "clima", "transbordo", "deslocamento"]:
             return [event for event in self.events["automaticos"] if event.name == "operacao"][0]
 
         if old_event.name == "aguardando transbordo":
@@ -160,6 +152,9 @@ class EventSimulator(threading.Thread):
             event_list = []
             for event in self.events["automaticos"]:
                 if event.name == "transbordo" and old_event.name != "aguardando transbordo":
+                    continue
+
+                if event.name == "operacao" and old_event.name == "operacao":
                     continue
 
                 event_list.append(event)
@@ -177,25 +172,42 @@ class EventSimulator(threading.Thread):
 
         return random.choices(event_list, [event.probability for event in event_list])[0]
 
-    def send_event(self, event):
+    def send_event(self, event, metodo='POST'):
         try:
             data = {
-                "ordem": self.ordem.id_,
-                "operador": self.ordem.operador.id_,
-                "maquina": self.ordem.maquina.id_,
-                "descricao": event.name,
+                "ordem_servico_id": self.ordem.id_,
+                "operador_id": self.ordem.operador.id_,
+                "maquina_id": self.ordem.maquina.id_,
+                "nome": event.name,
                 "data_inicio": event.data_inicio.isoformat(),
-                "data_fim": event.data_fim.isoformat()
+                "data_fim": event.data_fim.isoformat() if event.data_fim else None
             }
 
-            response = requests.post('http://api:5000/eventos', data=json.dumps(data))
+            if metodo == "PUT":
+                data['id'] = event.id
+                data['duracao'] = event.duration
+
+            response = requests.request(metodo, 'http://api:5000/eventos', data=json.dumps(data))
             if response:
-                print(f"Evento salvo: {data['descricao']} [ORDEM] {self.ordem.id_}, [OPERADOR] {self.ordem.operador.id_},"
+                response = response.json()
+                print(f"Evento {'atualizado 'if metodo == 'PUT' else 'salvo '}[ID] {response['id']}: {data['nome']},"
+                      f" [DURACAO] {event.duration} sec"
+                      f" [ORDEM] {self.ordem.id_},"
+                      f" [OPERADOR] {self.ordem.operador.id_},"
                       f" [TURNO] {self.ordem.operador.turno}, [MAQUINA] {self.ordem.maquina.id_}",
                     flush=True)
 
+                if metodo == 'POST':
+                    return response['id']
+
+                return response
+
         except:
             print(traceback.format_exc(), flush=True)
+            print(response.status_code)
+            print(response.text)
+
+        return
 
 
 class Deamon:
@@ -242,6 +254,11 @@ class Deamon:
                                 self.ordens_ativas[row['id']] = simulador_eventos
             except:
                 print("Deu ruim", flush=True)
+
+            for _id, ordem in self.ordens_ativas.copy().items():
+                if not ordem.is_alive():
+                    print(f"Removendo Ordem {_id} do simulador", flush=True)
+                    del self.ordens_ativas[_id]
 
             time.sleep(60)
 

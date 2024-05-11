@@ -17,31 +17,29 @@ async def eventos_por_ordem(id_ordem: int):
 
     eventos = await evento_service.busca_eventos_ordem(id_ordem)
 
-    return JSONResponse(status_code=200, content={"eventos": eventos})
+    return {"eventos": eventos}
 
 
 @router.post("/eventos")
-async def insere_eventos(evento: Evento) -> Response:
+async def insere_evento(evento: Evento) -> JSONResponse:
 
     if not evento:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
 
     evento_service = EventoService()
-    evento = await evento_service.insere_evento(evento)
+    evento_inserido_id = await evento_service.insere_evento(evento)
 
     if evento.nome == "fim de ordem":
         ordem_service = OrdemService()
         ordem_service.finaliza_ordem_servico(evento.ordem_servico_id)
 
-    print(evento, flush=True)
-    return Response(status_code=204, content={"id": evento._id})
+    return JSONResponse(status_code=201, content={"id": str(evento_inserido_id)})
 
 
 @router.put("/eventos")
-async def atualiza_eventos(evento: Evento) -> Evento:
-    data = await evento
+async def finaliza_evento(evento: Evento):
 
-    if not data:
+    if not evento:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
 
     evento_service = EventoService()

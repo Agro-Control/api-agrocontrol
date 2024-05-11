@@ -31,7 +31,6 @@ class OrdemService:
                 if not result:
                     return {}
                 
-                
                 ordem = OrdemServico(**result)
  
         return ordem
@@ -165,8 +164,8 @@ class OrdemService:
                 update_query = """
                     UPDATE Ordem_Servico
                     SET 
-                        status = 'F',
-                    WHERE id = %(id)s;
+                        status = 'F'
+                    WHERE id = %s;
                 """
 
                 try:
