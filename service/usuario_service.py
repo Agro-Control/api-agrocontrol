@@ -269,15 +269,19 @@ class UsuarioService:
                 else:
                     return None
     
-    def validar_credenciais(self, email: str, senha: str) -> Optional[Usuario]:
+    def validar_credenciais(self, login: str, senha: str) -> Optional[Usuario]:
         with Database() as conn: 
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-                sql = """
+                # verificacao meme para saber se é email ou matricula
+                login_tipo = "email" if '@' in login and '.' in login else "matricula"
+
+                sql = f"""
                         SELECT *
                         FROM Usuario
-                        WHERE email = %s AND senha = %s;
-                      """
-                cursor.execute(sql, (email, senha), prepare=True)
+                        WHERE {login_tipo} = %s AND senha = %s;
+                """
+
+                cursor.execute(sql, (login, senha), prepare=True)
                 result = cursor.fetchone()
                 
                 if result:

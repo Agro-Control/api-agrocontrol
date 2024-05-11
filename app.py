@@ -50,7 +50,7 @@ async def root():
 def login(login: Login):
     
     usuario_service = UsuarioService()
-    usuario = usuario_service.validar_credenciais(login.email, login.senha)
+    usuario = usuario_service.validar_credenciais(login.login, login.senha)
     
     if usuario:
         # Remover a senha do objeto de usuário
