@@ -50,8 +50,7 @@ def inserir_empresa(empresa: Empresa):
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
     
     empresa_service = EmpresaService()
-    
-    
+
     empresa_service.inserir_empresa(empresa)
     
     return Response(status_code=200)
@@ -66,7 +65,7 @@ def atualiza_empresa(empresa: Empresa):
     
     response = empresa_service.altera_empresa(empresa)
     if not response:
-        return JSONResponse(status_code= 403, content={"error": "Erro ao atualizar empresa."})
+        return JSONResponse(status_code=403, content={"error": "Erro ao atualizar empresa."})
 
     return response
 
@@ -74,7 +73,7 @@ def atualiza_empresa(empresa: Empresa):
 @router.get("/estados_empresa")
 def busca_estados_empresas(
             grupo_id: int = Query(None, description="id do grupo empresarial"),
-            empresa_id: int = Query(None, description= "id da empresa")
+            empresa_id: int = Query(None, description = "id da empresa")
         ):
 
     empresa_service = EmpresaService()
