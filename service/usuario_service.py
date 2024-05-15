@@ -104,7 +104,7 @@ class UsuarioService:
                         email = %(email)s,
                         telefone = %(telefone)s,
                         status = %(status)s,
-                        empresa_id = %(logradouro)s,
+                        empresa_id = %(empresa_id)s,
                     WHERE id = %(id)s and tipo = 'G'
                 """
                 try:
