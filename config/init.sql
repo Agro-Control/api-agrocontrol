@@ -134,7 +134,7 @@ VALUES ('Prime Group'), ('Second Group');
 
 -- Inserir um admin pela saco (versão final é o unico cara que deve existir)
 INSERT INTO Usuario (nome, email, tipo, senha, grupo_id)
-VALUES ('DiretorInicial', 'DiretorInicial@gmail.com', 'A', '4321', 1);
+VALUES ('DiretorInicial', 'DiretorInicial@gmail.com', 'D', '4321', 1);
 
 -- Inserir uma empresa
 INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, grupo_id)
