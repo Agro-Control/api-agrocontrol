@@ -170,7 +170,7 @@ class EmpresaService:
                     return {}
                 
                 estados = {
-                    "estados": [row for row in result]
+                    "estados": result
                 }
                 
         return estados
