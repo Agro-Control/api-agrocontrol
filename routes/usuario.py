@@ -133,13 +133,13 @@ def atualiza_gestor(gestor: Usuario):
 def busca_usuarios_grupo(grupo_id: int = Query(None, description="Numero do grupo empresarial do Usuario"),
                         empresa_id: int = Query(None, description="Empresa do Usuario"),
                         unidade_id: int = Query(None, description="Unidade do Usuario"),
+                        nome: str = Query(None, description="Nome do Usuario"),
                         status: str = Query(None, description="Status do Usuario"),
                         tipo: str = Query(None, description="Tipo do Usuario")):
 
-
     usuario_service = UsuarioService()
 
-    response = usuario_service.busca_usuarios(grupo_id, empresa_id, unidade_id, status, tipo )
+    response = usuario_service.busca_usuarios(grupo_id, empresa_id, unidade_id, nome, status, tipo)
     if not response:
 
         return JSONResponse(status_code=404, content={"error": "Erro ao atualizar gestor."})

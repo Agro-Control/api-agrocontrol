@@ -269,8 +269,8 @@ class UsuarioService:
                 else:
                     return None
 
-    def busca_usuarios(self, grupo_id: int = None, empresa_id: int = None, unidade_id: int = None, status: str = None,
-                       tipo: str = None):
+    def busca_usuarios(self, grupo_id: int = None, empresa_id: int = None, unidade_id: int = None, nome: str = None,
+                       status: str = None, tipo: str = None):
         usuarios = []
         with Database() as conn:
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
@@ -300,6 +300,10 @@ class UsuarioService:
                 if tipo:
                     sql += " AND u.tipo = %s"
                     params.append(tipo)
+
+                if nome:
+                    sql += " AND u.nome LIKE %s"
+                    params.append(f"%{nome}%")
 
                 cursor.execute(sql, params, prepare=True)
                 result = cursor.fetchall()
