@@ -43,11 +43,11 @@ class UnidadeService:
                     """
                 
                 if empresa_id:
-                    sql += "AND u.empresa_id = %s"
+                    sql += " AND u.empresa_id = %s"
                     params.append(empresa_id)
 
                 if grupo_id:
-                    sql += "AND u.grupo_id = %s"
+                    sql += " AND u.grupo_id = %s"
                     params.append(grupo_id)
 
                 if codigo:
