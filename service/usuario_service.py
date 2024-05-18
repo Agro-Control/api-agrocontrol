@@ -1,4 +1,5 @@
-from typing import Optional
+import traceback
+from typing import Optional, List
 from connection.postgres import Database
 from errors import DatabaseError
 from model.usuario_model import Usuario 
@@ -279,6 +280,7 @@ class UsuarioService:
                            SELECT *
                            FROM Usuario u
                            WHERE 1=1
+                           AND u.tipo != 'A'
                          """
 
                 if grupo_id:
@@ -299,13 +301,19 @@ class UsuarioService:
 
                 if tipo:
                     sql += " AND u.tipo = %s"
+
                     params.append(tipo)
 
                 if nome:
                     sql += " AND u.nome LIKE %s"
                     params.append(f"%{nome}%")
 
-                cursor.execute(sql, params, prepare=True)
+                # print(sql, flush=True)
+                try:
+                    cursor.execute(sql, params, prepare=True)
+                except:
+                    print(traceback.format_exc())
+
                 result = cursor.fetchall()
 
                 if not result:
