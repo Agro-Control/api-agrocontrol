@@ -47,7 +47,8 @@ class UnidadeService:
                     params.append(empresa_id)
 
                 if grupo_id:
-                    sql += " AND u.grupo_id = %s"
+
+                    sql += " AND u.empresa_id in (select e.id from empresa e where e.grupo_id = %s)"
                     params.append(grupo_id)
 
                 if codigo:
