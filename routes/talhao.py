@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from service.jwt_service import verify_token
 from service.talhao_service import TalhaoService
 from model.talhao_model import Talhao
 from fastapi.responses import JSONResponse
@@ -9,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/talhoes/{talhao_id}")
-def busca_talhao(talhao_id:int):
+def busca_talhao(talhao_id:int, token: str = Depends(verify_token(["G"]))):
 
     if not talhao_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -27,7 +29,8 @@ def busca_talhao(talhao_id:int):
 @router.get("/talhoes")
 def busca_talhoes(unidade_id:int = Query(None, description="Empresa do talhao"),  
                  status: str = Query(None, description="Status do Talhão"),
-                codigo: str = Query(None, description= "Nome/Codigo do Talhão")):
+                codigo: str = Query(None, description= "Nome/Codigo do Talhão"),
+                token: str = Depends(verify_token(["G"]))):
 
 
     talhao_service = TalhaoService()
@@ -41,7 +44,7 @@ def busca_talhoes(unidade_id:int = Query(None, description="Empresa do talhao"),
 
 
 @router.post("/talhoes")
-def inserir_talhao(talhao: Talhao):
+def inserir_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
     if not talhao:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
@@ -53,7 +56,7 @@ def inserir_talhao(talhao: Talhao):
 
 
 @router.put("/talhoes")
-def atualizar_talhao(talhao: Talhao):
+def atualizar_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
 
     if not talhao or not talhao.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})

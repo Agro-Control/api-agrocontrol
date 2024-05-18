@@ -54,7 +54,7 @@ CREATE TABLE Unidade(
 	data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     empresa_id INT,
     gestor_id INT
-    );
+);
 
 CREATE TABLE Talhao(
 	id SERIAL PRIMARY KEY,

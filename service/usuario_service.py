@@ -29,7 +29,8 @@ class UsuarioService:
  
         return gestor
 
-    def buscar_gestores(self, grupo_id: int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_gestores(self, grupo_id: int | None = None, empresa_id: int = None, unidade_id: int = None,
+                        codigo: str | None = None, status: str | None = None):
         gestores = []
         
         with Database() as conn: 
@@ -43,6 +44,18 @@ class UsuarioService:
                         WHERE 1=1 and tipo = 'G'
                     """
 
+                if grupo_id:
+                    sql += " AND u.empresa_id in (select e.id from empresa e where e.grupo_id = %s) "
+                    params.append(grupo_id)
+
+                if empresa_id:
+                    sql += " AND u.empresa_id = %s"
+                    params.append(empresa_id)
+
+                if unidade_id:
+                    sql += " AND u.unidade_id = %s"
+                    params.append(unidade_id)
+
                 if codigo:
                     sql += " AND u.nome LIKE %s"
                     params.append(f"%{codigo}%")
@@ -50,12 +63,6 @@ class UsuarioService:
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
-                
-                if grupo_id:
-                    sql += " AND u.grupo_id = %s"
-                    params.append(grupo_id)
-    
-                print(sql)
                 
                 cursor.execute(sql, params, prepare=True)
                 

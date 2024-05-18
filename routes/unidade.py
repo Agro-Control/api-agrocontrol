@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from model.unidade_model import Unidade
+from service.jwt_service import verify_token
 from service.unidade_service import UnidadeService
 from fastapi.responses import JSONResponse
 from fastapi import Response, Query
@@ -10,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/unidades/{unidade_id}", response_model=Unidade)
-def busca_unidade(unidade_id: int)-> Unidade:
+def busca_unidade(unidade_id: int, token: str = Depends(verify_token(["G", "D"])))-> Unidade:
     
     if not unidade_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -29,7 +30,8 @@ def busca_unidade(unidade_id: int)-> Unidade:
 def busca_unidades( grupo_id: int = Query(None, description="Grupo pertencente"),
                     empresa_id: int = Query(None, description="Empresa pertencente"),
                     status: str = Query(None, description="Status da Unidade"),
-                    codigo: str = Query(None, description= "Nome/Codigo da Unidade")):
+                    codigo: str = Query(None, description= "Nome/Codigo da Unidade"),
+                    token: str = Depends(verify_token(["G", "D"]))):
     
     unidade_service = UnidadeService()
 
@@ -41,7 +43,7 @@ def busca_unidades( grupo_id: int = Query(None, description="Grupo pertencente")
     return {"unidades": response}
  
 @router.post("/unidades")
-def inserir_unidade(unidade: Unidade):
+def inserir_unidade(unidade: Unidade, token: str = Depends(verify_token(["G", "D"]))):
     
     if not unidade:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -53,7 +55,7 @@ def inserir_unidade(unidade: Unidade):
     return Response(status_code=201)
 
 @router.put("/unidades")
-def atualiza_unidade(unidade: Unidade):
+def atualiza_unidade(unidade: Unidade, token: str = Depends(verify_token(["G", "D"]))):
 
     if not unidade or not unidade.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})

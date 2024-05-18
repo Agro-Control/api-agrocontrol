@@ -1,16 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from service.empresa_service import EmpresaService
 from model.empresa_model import Empresa
 from fastapi.responses import JSONResponse
 from typing import Dict
 from fastapi import Response, Query
+from service.jwt_service import verify_token
 
 router = APIRouter()
 
 
 
 @router.get("/empresas/{empresa_id}", response_model=Empresa)
-def busca_empresa(empresa_id: int)-> Empresa:
+def busca_empresa(empresa_id: int, token: str = Depends(verify_token(["D", "G"]))) -> Empresa:
     
     if not empresa_id:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
@@ -27,16 +28,15 @@ def busca_empresa(empresa_id: int)-> Empresa:
 
 @router.get("/empresas")
 def busca_empresas(status: str = Query(None, description="Status da Empresa"),
-                   codigo: str = Query(None, description= "Nome/Codigo da Empresa"),
-                   estado: str = Query(None, description= "Nome do Estado da Empresa"),
-                   grupo_id: int = Query(None, description= "Grupo da Empresa")
+                   codigo: str = Query(None, description="Nome/Codigo da Empresa"),
+                   estado: str = Query(None, description="Nome do Estado da Empresa"),
+                   grupo_id: int = Query(None, description="Grupo da Empresa"),
+                   token: str = Depends(verify_token(["D"]))
                    ):
 
     empresa_service = EmpresaService()
 
-    print(f"Codigo: {codigo}")
-    print(f"Status: {status}")
-    response = empresa_service.buscar_empresas(status=status,codigo=codigo, estado=estado, grupo_id=grupo_id)
+    response = empresa_service.buscar_empresas(status=status, codigo=codigo, estado=estado, grupo_id=grupo_id)
 
     if not response:
         return JSONResponse(status_code= 403, content={"error": "Empresas não encontradas"})
@@ -44,7 +44,7 @@ def busca_empresas(status: str = Query(None, description="Status da Empresa"),
     return {"empresas": response}
  
 @router.post("/empresas")
-def inserir_empresa(empresa: Empresa):
+def inserir_empresa(empresa: Empresa, token: str = Depends(verify_token(["D"]))):
     
     if not empresa:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
@@ -56,7 +56,7 @@ def inserir_empresa(empresa: Empresa):
     return Response(status_code=200)
 
 @router.put("/empresas")
-def atualiza_empresa(empresa: Empresa):
+def atualiza_empresa(empresa: Empresa, token: str = Depends(verify_token(["D", "G"]))):
 
     if not empresa or not empresa.id:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
@@ -73,7 +73,8 @@ def atualiza_empresa(empresa: Empresa):
 @router.get("/estados_empresa")
 def busca_estados_empresas(
             grupo_id: int = Query(None, description="id do grupo empresarial"),
-            empresa_id: int = Query(None, description = "id da empresa")
+            empresa_id: int = Query(None, description="id da empresa"),
+            token: str = Depends(verify_token(["D", "G"]))
         ):
 
     empresa_service = EmpresaService()

@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from service.jwt_service import verify_token
 from service.ordem_service import OrdemService
 from service.evento_service import EventoService
 from fastapi.responses import JSONResponse
@@ -8,7 +10,7 @@ from model.evento_model import Evento
 router = APIRouter()
 
 @router.get("/eventos/{id_ordem}")
-async def eventos_por_ordem(id_ordem: int):
+async def eventos_por_ordem(id_ordem: int, token: str = Depends(verify_token(["G", "D"]))):
 
     if not id_ordem:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -21,7 +23,7 @@ async def eventos_por_ordem(id_ordem: int):
 
 
 @router.post("/eventos")
-async def insere_evento(evento: Evento) -> JSONResponse:
+async def insere_evento(evento: Evento, token: str = Depends(verify_token(["O"]))) -> JSONResponse:
 
     if not evento:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
@@ -37,7 +39,7 @@ async def insere_evento(evento: Evento) -> JSONResponse:
 
 
 @router.put("/eventos")
-async def finaliza_evento(evento: Evento):
+async def finaliza_evento(evento: Evento, token: str = Depends(verify_token(["O"]))):
 
     if not evento:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})

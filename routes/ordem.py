@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from service.jwt_service import verify_token
 from service.ordem_service import OrdemService
 from model.ordem_de_servico_model import OrdemServico
 from fastapi.responses import JSONResponse
@@ -12,7 +14,7 @@ async def root():
     return {"message": "Hello word 2"}
 
 @router.get("/ordem/maquina/{id_maquina}/ativa")
-def ordem_maquina_ativa(maquina_id: int):
+def ordem_maquina_ativa(maquina_id: int, token: str = Depends(verify_token(["O"]))):
     
     if not maquina_id:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
@@ -26,7 +28,7 @@ def ordem_maquina_ativa(maquina_id: int):
     return JSONResponse(status_code=200, content=response.dict())
 
 @router.get("/ordens/{id_ordem}")
-def busca_ordem(id_ordem:int):
+def busca_ordem(id_ordem:int, token: str = Depends(verify_token(["A", "G"]))):
     if not id_ordem:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
@@ -42,7 +44,8 @@ def busca_ordem(id_ordem:int):
 
 @router.get("/ordens")
 def buscar_ordens(empresa_id: int = Query(None, description="Empresa pertencente"),
-                    status: str = Query(None, description="Status da Unidade")):
+                    status: str = Query(None, description="Status da Unidade"),
+                  token: str = Depends(verify_token(["G", "D"]))):
 
     ordem_service = OrdemService()
 
@@ -55,7 +58,7 @@ def buscar_ordens(empresa_id: int = Query(None, description="Empresa pertencente
 
 
 @router.post("/ordens")
-def inserir_ordem(ordem: OrdemServico):
+def inserir_ordem(ordem: OrdemServico, token: str = Depends(verify_token(["G"]))):
 
     if not ordem:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -68,7 +71,7 @@ def inserir_ordem(ordem: OrdemServico):
 
 
 @router.put("/ordens")
-def atualizar_ordem(ordem: OrdemServico):
+def atualizar_ordem(ordem: OrdemServico, token: str = Depends(verify_token(["G"]))):
     if not ordem or not ordem.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     

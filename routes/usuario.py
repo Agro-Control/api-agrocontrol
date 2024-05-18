@@ -1,15 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from service.jwt_service import verify_token
 from service.usuario_service import UsuarioService
 from model.usuario_model import Usuario
 from fastapi.responses import JSONResponse
 from fastapi import Response, Query
-from typing import Dict
+from typing import Dict, List
 
 router = APIRouter()
 
 
 @router.get("/operador/{id}", response_model=Usuario)
-def busca_operador(id: int) -> Usuario:
+def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Usuario:
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -28,13 +30,9 @@ def busca_operadores(unidade_id: int = Query(None, description="Unidade do Opera
                      turno: str = Query(None, description="Turno do Operador"),
                      status: str = Query(None, description="Status do Operador"),
                      codigo: str = Query(None, description="Nome/Codigo do Operador"),
-                     disponibilidade_ordem: bool = Query(None, description="Operadores diponiveis para nova ordem")):
+                     disponibilidade_ordem: bool = Query(None, description="Operadores diponiveis para nova ordem"),
+                     token: str = Depends(verify_token(["G"]))):
     operador_service = UsuarioService()
-    print(f"Unidade ID: {unidade_id}")
-    print(f"Turno: {turno}")
-    print(f"Codigo: {codigo}")
-    print(f"Status: {status}")
-    print(f"Disponibilidade_ordem: {disponibilidade_ordem}")
 
     response = operador_service.buscar_operadores(unidade_id=unidade_id, turno=turno, status=status, codigo=codigo,
                                                   disp_ordem=disponibilidade_ordem)
@@ -46,7 +44,7 @@ def busca_operadores(unidade_id: int = Query(None, description="Unidade do Opera
 
 
 @router.post("/operadores")
-def inserir_operador(operador: Usuario):
+def inserir_operador(operador: Usuario, token: str = Depends(verify_token(["G"]))):
     if not operador:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -58,7 +56,7 @@ def inserir_operador(operador: Usuario):
 
 
 @router.put("/operadores")
-def atualiza_operador(operador: Usuario):
+def atualiza_operador(operador: Usuario, token: str = Depends(verify_token(["G"]))):
     if not operador or not operador.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -72,7 +70,7 @@ def atualiza_operador(operador: Usuario):
 
 
 @router.get("/gestor/{id}", response_model=Usuario)
-def busca_gestor(id: int) -> Usuario:
+def busca_gestor(id: int, token: str = Depends(verify_token(["D"]))) -> Usuario:
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -88,14 +86,16 @@ def busca_gestor(id: int) -> Usuario:
 
 @router.get("/gestores")
 def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empresarial do Gestor"),
+                    empresa_id: int = Query(None, description="Empresa do Gestor"),
+                    unidade_id: int = Query(None, description="Unidade do Gestor"),
                    status: str = Query(None, description="Status do Gestor"),
-                   codigo: str = Query(None, description="Nome/Codigo do Gestor")):
+                   codigo: str = Query(None, description="Nome/Codigo do Gestor"),
+                   token: str = Depends(verify_token(["D"]))):
+
     gestor_service = UsuarioService()
 
-    print(f"Grupo_id: {grupo_id}")
-    print(f"Codigo: {codigo}")
-    print(f"Status: {status}")
-    response = gestor_service.buscar_gestores(grupo_id=grupo_id, status=status, codigo=codigo)
+    response = gestor_service.buscar_gestores(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id,
+                                              status=status, codigo=codigo)
 
     if not response:
         return JSONResponse(status_code=404, content={"error": "Gestores não encontrados"})
@@ -104,7 +104,7 @@ def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empr
 
 
 @router.post("/gestores")
-def inserir_gestor(gestor: Usuario):
+def inserir_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
     if not gestor:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -116,7 +116,7 @@ def inserir_gestor(gestor: Usuario):
 
 
 @router.put("/gestores")
-def atualiza_gestor(gestor: Usuario):
+def atualiza_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
     if not gestor or not gestor.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -135,13 +135,14 @@ def busca_usuarios_grupo(grupo_id: int = Query(None, description="Numero do grup
                         unidade_id: int = Query(None, description="Unidade do Usuario"),
                         nome: str = Query(None, description="Nome do Usuario"),
                         status: str = Query(None, description="Status do Usuario"),
-                        tipo: str = Query(None, description="Tipo do Usuario")):
+                        tipo: str = Query(None, description="Tipo do Usuario"),
+                        token: str = Depends(verify_token(["D"]))):
 
     usuario_service = UsuarioService()
-
+    # print(type(tipos))
     response = usuario_service.busca_usuarios(grupo_id, empresa_id, unidade_id, nome, status, tipo)
     if not response:
 
-        return JSONResponse(status_code=404, content={"error": "Erro ao atualizar gestor."})
+        return JSONResponse(status_code=404, content={"error": "Erro"})
 
     return {"usuarios": response}

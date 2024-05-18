@@ -1,8 +1,8 @@
 from datetime import timedelta
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from fastapi import FastAPI
 from model.login_model import Login
-from service.jwt_service import token_24horas
+from service.jwt_service import token_24horas, verify_token
 from errors import ApiExceptionHandler
 from service.usuario_service import UsuarioService
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +15,7 @@ from routes.talhao import router as talhao_router
 from routes.usuario import router as usuario_router
 from routes.evento import router as evento_router
 from routes.grupo import router as grupo_router
+
 
 app = FastAPI()
 app.add_middleware(
@@ -59,7 +60,7 @@ def login(login: Login):
         token = token_24horas(data={"sub": usuario.email, "tipo": usuario.tipo, "id": usuario.id}, expires_delta=tempo_token)
         
         # Retorna o usuário junto com o token JWT
-        return {"usuario": usuario, "token": token}
+        return {"token": token}
     else:
         # Retornar manualmente o erro 401
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
@@ -67,7 +68,7 @@ def login(login: Login):
 
 # rota para revalidar usuario logado, deve morrer dps
 @app.get("/usersession/{id}")
-def user_logado(id: int):
+def user_logado(id: int, token: str = Depends(verify_token(["D", "G"]))):
 
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
