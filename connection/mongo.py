@@ -2,7 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from errors import DatabaseError
 
 def get_conn_str():
-    return "mongodb://mongodb:27017/"
+    return "mongodb://localhost:27017/"
 
 class Mongo:
     def __init__(self) -> None:

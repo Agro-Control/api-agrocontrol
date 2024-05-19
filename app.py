@@ -15,7 +15,7 @@ from routes.talhao import router as talhao_router
 from routes.usuario import router as usuario_router
 from routes.evento import router as evento_router
 from routes.grupo import router as grupo_router
-
+from routes.dashboard import router as dash_router
 
 app = FastAPI()
 app.add_middleware(
@@ -38,7 +38,7 @@ app.include_router(talhao_router)
 app.include_router(usuario_router)
 app.include_router(evento_router)
 app.include_router(grupo_router)
-
+app.include_router(dash_router)
 
 @app.get("/")
 async def root():
