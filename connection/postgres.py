@@ -10,7 +10,7 @@ def get_conn_str():
     dbname=postgres
     user=postgres
     password=postgres
-    host=localhost
+    host=postgresdb
     port=5432
     """
 

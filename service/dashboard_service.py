@@ -59,7 +59,6 @@ class DashBoardsService:
                     params.append(unidade_id)
 
                 cursor.execute(sql, params, prepare=True)
-                print(sql)
 
                 result = cursor.fetchone()
 
