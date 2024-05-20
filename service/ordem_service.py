@@ -3,6 +3,7 @@ from connection.mongo import Mongo
 from errors import EventError
 from errors import DatabaseError
 from model.ordem_de_servico_model import OrdemServico
+from model.operador_model import Operador
 
 class OrdemService:
     
@@ -63,9 +64,15 @@ class OrdemService:
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
                 params = []
                 sql = f"""
-                    SELECT os.* , STRING_AGG(oso.operador_id::text, ',') operadores FROM ordem_servico os 
-                    INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
-                    WHERE 1=1 
+                    SELECT 
+                        os.*, 
+                        m.nome AS nome_maquina, 
+                        json_agg(json_build_object('id', u.id, 'nome', u.nome, 'turno', u.turno)) AS operadores
+                    FROM ordem_servico os
+                    INNER JOIN ordem_servico_operador oso ON oso.ordem_servico_id = os.id
+                    INNER JOIN usuario u ON u.id = oso.operador_id
+                    INNER JOIN maquina m ON m.id = os.maquina_id
+                    WHERE 1=1
                 """
                 
                 if empresa_id:
@@ -76,7 +83,7 @@ class OrdemService:
                     sql += " AND os.status = %s"
                     params.append(status)
                 
-                sql += " GROUP BY os.id"
+                sql += " GROUP BY os.id, m.nome"
 
                 cursor.execute(sql, params, prepare=True)
                 result = cursor.fetchall()
@@ -85,11 +92,11 @@ class OrdemService:
                     return []
 
                 for row in result:
-                    print(row)
+                    operadores = [
+                        Operador(**op).dict(exclude_none=True) for op in row['operadores']
+                    ]
                     ordem = OrdemServico(**row)
-                    
-                    ids_operadores = list(map(int, row['operadores'].split(',')))
-                    ordem.operadores_ids = ids_operadores
+                    ordem.operadores = operadores
                     ordens.append(ordem)
 
         return ordens

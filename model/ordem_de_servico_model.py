@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List
-
+from typing import List, Dict, Any
+from model.operador_model import Operador
 class OrdemServico(BaseModel):
     id: int | None = None
     data_criacao: datetime | None = None
@@ -16,8 +16,13 @@ class OrdemServico(BaseModel):
     unidade_id: int | None = None
     empresa_id: int | None = None
     maquina_id: int | None = None
-    operadores_ids: List[int] = []
+    operadores:  List[int | Operador | None] | Dict = []
 
+    def dict(self, *args, **kwargs) -> Dict[str, Any]:
+        if hasattr(kwargs, "exclude_none"):
+            _ignored = kwargs.pop("exclude_none")
+
+        return super().dict(*args, exclude_none=True, **kwargs)
 
 # class OrdemServico:
 #     def __init__(self, id= None, data_inicio= None, status= None, data_fim=None,
