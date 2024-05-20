@@ -16,6 +16,7 @@ class OrdemServico(BaseModel):
     unidade_id: int | None = None
     empresa_id: int | None = None
     maquina_id: int | None = None
+    nome_maquina: str | None = None
     operadores:  List[int | Operador | None] | Dict = []
 
     def dict(self, *args, **kwargs) -> Dict[str, Any]:

@@ -114,8 +114,7 @@ class OrdemService:
                     cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
                     id_ultimo_registro = cursor.fetchone()[0]
                 
-                    values = [f"({id_ultimo_registro},{id})" for id in ordem_servico.operadores_ids]
-
+                    values = [f"({id_ultimo_registro}, {id})" for id in ordem_servico.operadores_ids]
 
                     insert_query = f"""
                         INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
@@ -134,7 +133,7 @@ class OrdemService:
 
         return
 
-    def altera_ordem_servico(self, ordem_update:OrdemServico):
+    def altera_ordem_servico(self, ordem_update: OrdemServico):
         ordem = {}
         
         with Database() as conn: 
@@ -155,8 +154,10 @@ class OrdemService:
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
-                finally:
-                    conn.commit()
+
+
+
+                conn.commit()
                 
                 ordem = self.busca_ordem_servico(ordem_update.id)
 
