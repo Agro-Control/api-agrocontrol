@@ -155,7 +155,26 @@ class OrdemService:
                     conn.rollback()
                     raise DatabaseError(e)
 
+                sql = """
+                    DELETE FROM ordem_servico_operador oso WHERE oso.ordem_servico_id = %s;
+                """
+                try:
+                    cursor.execute(sql, ordem_update.id, prepare=True)
+                except Exception as e:
+                    conn.rollback()
+                    raise DatabaseError(e)
 
+                values = [f"({ordem_update.id}, {id})" for id in ordem_update.operadores]
+
+                insert_query = f"""
+                                INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
+                                VALUES {", ".join(values)};
+                            """
+                try:
+                    cursor.execute(insert_query, prepare=True)
+                except Exception as e:
+                    conn.rollback()
+                    raise DatabaseError(e)
 
                 conn.commit()
                 
