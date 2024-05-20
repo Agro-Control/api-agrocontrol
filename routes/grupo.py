@@ -1,14 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from service.grupo_service import GrupoService
 from model.grupo_model import Grupo
 from fastapi.responses import JSONResponse
 from typing import Dict
 from fastapi import Response, Query
+from service.jwt_service import verify_token
 
 router = APIRouter()
 
 @router.get("/grupos/{grupo_id}", response_model=Grupo)
-def busca_grupo(grupo_id: int)-> Grupo:
+def busca_grupo(grupo_id: int, token: str = Depends(verify_token(["G", "D"])))-> Grupo:
     
     if not grupo_id:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
@@ -24,7 +25,7 @@ def busca_grupo(grupo_id: int)-> Grupo:
 
 
 @router.get("/grupos")
-def busca_grupos():
+def busca_grupos(token: str = Depends(verify_token(["D"]))):
 
     grupo_service = GrupoService()
 
@@ -36,7 +37,7 @@ def busca_grupos():
     return {"grupos": response}
  
 @router.post("/grupos")
-def inserir_grupo(grupo: Grupo):
+def inserir_grupo(grupo: Grupo, token: str = Depends(verify_token(["D"]))):
     
     if not grupo:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
@@ -48,7 +49,7 @@ def inserir_grupo(grupo: Grupo):
     return Response(status_code=200)
 
 @router.put("/grupo")
-def atualiza_grupo(grupo: Grupo):
+def atualiza_grupo(grupo: Grupo, token: str = Depends(verify_token(["D"]))):
 
     if not grupo or not grupo.id:
         return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
