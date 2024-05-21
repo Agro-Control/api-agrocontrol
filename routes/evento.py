@@ -23,7 +23,7 @@ async def eventos_por_ordem(id_ordem: int, token: str = Depends(verify_token(["G
 
 
 @router.post("/eventos")
-async def insere_evento(evento: Evento, token: str = Depends(verify_token(["O"]))) -> JSONResponse:
+async def insere_evento(evento: Evento) -> JSONResponse:
 
     if not evento:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
@@ -33,13 +33,17 @@ async def insere_evento(evento: Evento, token: str = Depends(verify_token(["O"])
 
     if evento.nome == "fim de ordem":
         ordem_service = OrdemService()
-        ordem_service.finaliza_ordem_servico(evento.ordem_servico_id)
+        ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, 'F')
+
+    elif evento.nome == "inicio ordem de servico":
+        ordem_service = OrdemService()
+        ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, 'E')
 
     return JSONResponse(status_code=201, content={"id": str(evento_inserido_id)})
 
 
 @router.put("/eventos")
-async def finaliza_evento(evento: Evento, token: str = Depends(verify_token(["O"]))):
+async def finaliza_evento(evento: Evento):
 
     if not evento:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})

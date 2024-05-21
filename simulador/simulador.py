@@ -49,10 +49,11 @@ class Maquina:
 
 
 class Ordem:
-    def __init__(self, id, maquina, operador_ativo):
+    def __init__(self, id, maquina, operador_ativo, status):
         self.id_ = id
         self.maquina = maquina
         self.operador = operador_ativo
+        self.status = status
 
 
 class Operador:
@@ -100,6 +101,13 @@ class EventSimulator(threading.Thread):
               f"OPERADOR: {self.ordem.operador.id_}, "
               f"TURNO: {self.ordem.operador.turno}, "
               f"MAQUINA: {self.ordem.maquina.id_}", flush=True)
+
+        if self.ordem.status == 'A':
+            event = Event("inicio ordem de servico")
+            event.set_data_inicio(data_inicio=datetime.datetime.now())
+            event.set_data_fim(data_fim=datetime.datetime.now())
+            self.send_event(event)
+            self.ordem.status = 'E'
 
         current_event, old_event = None, None
 
@@ -226,17 +234,18 @@ class Deamon:
                 with psycopg.connect(DB_CONN_STR, row_factory=dict_row) as db:
                     with db.cursor() as cursor:
                         sql = f"""
-                            SELECT
+                             SELECT
                                 os.id as id,
                                 os.maquina_id as maquina_id,
                                 oso.operador_id as operador_id,
                                 u.turno as turno
                             FROM ordem_servico os
                             INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
-                            INNER JOIN  usuario u ON u.id = oso.operador_id
-                            WHERE os.status = 'A'
+                            INNER JOIN usuario u ON u.id = oso.operador_id
+                            WHERE os.status in ('A', 'E')
                             AND u.tipo = 'O'
                             AND u.turno = '{self.get_turno()}'
+                            AND os.data_inicio <= NOW()
                             AND u.nome LIKE '%-SML';
                         """
 

@@ -185,18 +185,18 @@ class OrdemService:
     
         return ordem
 
-    def finaliza_ordem_servico(self, id_ordem: int):
+    def altera_status_ordem_servico(self, id_ordem: int, status:str):
         with Database() as conn:
             with conn.cursor() as cursor:
                 update_query = """
                     UPDATE Ordem_Servico
                     SET 
-                        status = 'F'
+                        status = %s
                     WHERE id = %s;
                 """
 
                 try:
-                    cursor.execute(update_query, (id_ordem,), prepare=True)
+                    cursor.execute(update_query, (status, id_ordem,), prepare=True)
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
