@@ -1,4 +1,4 @@
-from connection.postgres import Database
+from connection.postgres import Database, AsyncDatabase
 from connection.mongo import Mongo
 from errors import EventError
 from errors import DatabaseError
@@ -57,6 +57,32 @@ class OrdemService:
                 
                 ordem = OrdemServico(**result)
         return ordem
+
+
+    async def busca_ordem_servico_async(self, id_ordem:int):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+                sql = f"""
+                           SELECT os.* ,STRING_AGG(oso.operador_id::text, ',') operadores FROM ordem_servico os 
+                           INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
+                           WHERE os.id = %s
+                           GROUP BY os.id
+                       """
+
+                await cursor.execute(sql, (id_ordem,), prepare=True)
+
+                result = await cursor.fetchone()
+
+                if not result:
+                    return {}
+                # print(**result)
+
+                ordem = OrdemServico(**result)
+        return ordem
+
+
+
+
     
     def busca_ordens_servicos(self, empresa_id: int | None = None, status: str | None = None):
         ordens = []

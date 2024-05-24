@@ -193,6 +193,7 @@ class EventSimulator(threading.Thread):
                 data['duracao'] = event.duration
 
             response = requests.request(metodo, 'http://api:5000/eventos', data=json.dumps(data))
+
             if response:
                 response = response.json()
                 print(f"Evento {'atualizado 'if metodo == 'PUT' else 'salvo '}[ID] {response['id']}: {data['nome']},"
@@ -224,6 +225,8 @@ class Deamon:
 
     def start(self):
         self.runnig = True
+        time.sleep(15)  # sleep de segurança
+
         while self.runnig:
             print("Running all time...")
             # consultar as ordem ativas junto com os operadores, buscar maquina, etc
