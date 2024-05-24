@@ -135,10 +135,7 @@ class EventSimulator(threading.Thread):
                 old_event.set_data_fim(data_fim=datetime.datetime.now())
                 self.send_event(old_event, "PUT")
 
-            # else:
-
             old_event = current_event
-
             time.sleep(current_event.duration)
 
         print(f"Ordem [{self.ordem.id_}] simulador encerrado!", flush=True)
@@ -238,6 +235,7 @@ class Deamon:
                                 os.id as id,
                                 os.maquina_id as maquina_id,
                                 oso.operador_id as operador_id,
+                                os.status status,
                                 u.turno as turno
                             FROM ordem_servico os
                             INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
@@ -256,7 +254,7 @@ class Deamon:
                             if row['id'] not in self.ordens_ativas.copy():
                                 operador = Operador(row['operador_id'], row['turno'])
                                 maquina = Maquina(row['maquina_id'])
-                                ordem = Ordem(row['id'], maquina, operador)
+                                ordem = Ordem(row['id'], maquina, operador, row['status'])
 
                                 simulador_eventos = EventSimulator(ordem)
                                 simulador_eventos.start()
