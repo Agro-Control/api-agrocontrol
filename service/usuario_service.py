@@ -1,8 +1,12 @@
+from datetime import datetime
 import traceback
 from typing import Optional, List
+
+import bcrypt
 from connection.postgres import Database
 from errors import DatabaseError
-from model.usuario_model import Usuario 
+from model.usuario_model import Usuario
+from service.jwt_service import criptografar_senha, enviar_email, gerar_senha_aleatoria 
 
 class UsuarioService:
     
@@ -81,12 +85,16 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor:
 
+                senha = gerar_senha_aleatoria()
+                enviar_email(gestor.email, senha)
+                senha_criptografada = criptografar_senha(senha)
+                gestor.senha = senha_criptografada
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, telefone, email, empresa_id, tipo
+                        cpf, nome, telefone, email, empresa_id, tipo, senha
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, 'G')
+                    VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, 'G', %(senha)s)
                 """
                 try:
                     cursor.execute(insert_query, gestor.dict(), prepare=True)
@@ -208,12 +216,26 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor:
 
+                queyr_qtd_op = "SELECT COUNT(*) FROM Usuario WHERE tipo = 'O'"
+                cursor.execute(queyr_qtd_op)
+                qtd_op = cursor.fetchone()[0]
+                ano_atual = datetime.now().year
+                novo_op = qtd_op + 1
+                matricula = f"{ano_atual}00{novo_op:03d}"
+                operador.matricula = matricula
+
+                senha = gerar_senha_aleatoria()
+                #enviar_email(operador.email, senha)
+                senha_criptografada = criptografar_senha(senha)
+
+                operador.senha = senha_criptografada
+
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, email, matricula, turno, gestor_id, unidade_id, tipo
+                        cpf, nome, email, matricula, turno, gestor_id, unidade_id, tipo, senha
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(unidade_id)s, 'O')
+                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(unidade_id)s, 'O', %(senha)s)
                 """
                 try:
                     cursor.execute(insert_query, operador.dict(), prepare=True)
@@ -337,19 +359,18 @@ class UsuarioService:
     def validar_credenciais(self, login: str, senha: str) -> Optional[Usuario]:
         with Database() as conn: 
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-                # verificacao meme para saber se é email ou matricula
                 login_tipo = "email" if '@' in login and '.' in login else "matricula"
 
                 sql = f"""
                         SELECT *
                         FROM Usuario
-                        WHERE {login_tipo} = %s AND senha = %s;
+                        WHERE {login_tipo} = %s;
                 """
 
-                cursor.execute(sql, (login, senha), prepare=True)
+                cursor.execute(sql, (login,), prepare=True)
                 result = cursor.fetchone()
-                
-                if result:
+
+                if result and bcrypt.checkpw(senha.encode('utf-8'), result['senha'].encode('utf-8')):
                     return Usuario(**result)
                 else:
                     return None

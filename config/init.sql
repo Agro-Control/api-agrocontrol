@@ -150,9 +150,9 @@ VALUES ('Unidade 1', '81170230', 'PR', 'Curitiba', 'Cidade Industrial', 'Cyro Co
        ('Unidade 2', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 1, 2);
 
 -- Inserir dois operadores
-INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, unidade_id, tipo)
-VALUES ('01590575075', '98989', 'Operador 1', 'M', 2, 1, 'O'),
-       ('01590575076', '98979', 'Operador 2', 'T', 2, 2, 'O');
+INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, unidade_id, tipo, senha)
+VALUES ('01590575075', '20240001', 'Operador 1', 'M', 2, 1, 'O', '999999'),
+       ('01590575076', '20240002', 'Operador 2', 'T', 2, 2, 'O', '999989');
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, unidade_id)
