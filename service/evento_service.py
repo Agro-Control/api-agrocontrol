@@ -82,7 +82,8 @@ class EventoService:
                     {
                         '$group': {
                             '_id': '$nome',
-                            'count': {'$sum': 1}
+                            'count': {'$sum': 1},
+                            'duracao': {'$sum': {'$ifNull': ['$duracao', 0]}}
                         }
                     }
 
@@ -90,6 +91,7 @@ class EventoService:
 
                 async for result in client.agro_control.eventos.aggregate(pipeline):
                     qtd_eventos[result['_id']] = result['count']
+                    qtd_eventos['duracao_total'] = qtd_eventos.get('duracao_total', 0) + result['duracao']
                     qtd_eventos['total'] = qtd_eventos.get('total', 0) + result['count']
 
             except Exception as ex:
