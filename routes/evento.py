@@ -20,7 +20,7 @@ async def eventos_por_ordem(id_ordem: int):
     ordem = await ordem_service.busca_ordem_servico_async(id_ordem)
 
     if not ordem:
-        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+        return JSONResponse(status_code=404, content={"detail": "Ordem inválida"})
 
     evento_service = EventoService()
 
