@@ -65,3 +65,34 @@ class EventoService:
             except Exception as ex:
                 raise EventError(ex)
         return
+
+    async def dash_eventos_ordem(self, ordem_id: int):
+
+        qtd_eventos = {}
+
+        async with Mongo() as client:
+            try:
+
+                pipeline = [
+                    {
+                        '$match': {
+                            'ordem_servico_id': ordem_id
+                        }
+                    },
+                    {
+                        '$group': {
+                            '_id': '$nome',
+                            'count': {'$sum': 1}
+                        }
+                    }
+
+                ]
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    qtd_eventos[result['_id']] = result['count']
+                    qtd_eventos['total'] = qtd_eventos.get('total', 0) + result['count']
+
+            except Exception as ex:
+                raise EventError(ex)
+
+        return qtd_eventos

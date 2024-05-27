@@ -221,16 +221,17 @@ class DashBoardsService:
                 result = cursor.fetchone()
 
                 if not result:
-                    dash['total'] = {"total_de_ordens": 0}
+                    dash['total_de_ordens'] = 0
                     return dash
 
-                dash['total'] = {"total_de_ordens": result['total']}
+                dash['total_de_ordens'] = result['total']
 
                 sql = """
                     SELECT 
                         CASE
                             WHEN os.status = 'A' THEN 'Ativa'
-                            WHEN os.status = 'F' THEN 'Finalizando'
+                            WHEN os.status = 'E' THEN 'Em andamento'
+                            WHEN os.status = 'F' THEN 'Finalizado'
                             WHEN os.status = 'C' THEN 'Cancelado'
                         ELSE
                             'Fez merda'
@@ -260,13 +261,11 @@ class DashBoardsService:
 
                 result = cursor.fetchall()
 
-                dash['status'] = {}
-
                 if not result:
                     return dash
 
                 for row in result:
-                    dash['status'][row['STATUS']] = row['total']
+                    dash[row['STATUS']] = row['total']
 
         return dash
 
