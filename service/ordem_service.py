@@ -140,7 +140,7 @@ class OrdemService:
                     cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
                     id_ultimo_registro = cursor.fetchone()[0]
                 
-                    values = [f"({id_ultimo_registro}, {id})" for id in ordem_servico.operadores_ids]
+                    values = [f"({id_ultimo_registro}, {id})" for id in ordem_servico.operadores]
 
                     insert_query = f"""
                         INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
