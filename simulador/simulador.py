@@ -87,12 +87,12 @@ class EventSimulator(threading.Thread):
                 Event("deslocamento", 1, 5, 0.2),
             ],
             "manuais": [
-                Event("aguardando transbordo", 1, 2, 0.3),
+                Event("aguardando_transbordo", 1, 2, 0.3),
                 Event("manutencao", 1, 2, 0.2),
                 Event("clima", 1, 2, 0.01),
                 Event("abastecimento", 1, 2, 0.1),
-                Event("troca de turno", 1, 2),
-                Event("fim de ordem", probability=0.01)
+                Event("troca_turno", 1, 2),
+                Event("fim_ordem", probability=0.01)
             ]
         }
 
@@ -103,7 +103,7 @@ class EventSimulator(threading.Thread):
               f"MAQUINA: {self.ordem.maquina.id_}", flush=True)
 
         if self.ordem.status == 'A':
-            event = Event("inicio ordem de servico")
+            event = Event("inicio_ordem_servico")
             event.set_data_inicio(data_inicio=datetime.datetime.now())
             event.set_data_fim(data_fim=datetime.datetime.now())
             self.send_event(event)
@@ -118,7 +118,7 @@ class EventSimulator(threading.Thread):
             current_event.set_new_duration()
             current_event.set_data_inicio(data_inicio=datetime.datetime.now())
 
-            if current_event.name in ["fim de ordem", "troca de turno"]:
+            if current_event.name in ["fim_ordem", "troca_turno"]:
                 current_event.set_data_fim(data_fim=datetime.datetime.now())
                 self.send_event(current_event)
                 break
@@ -147,16 +147,16 @@ class EventSimulator(threading.Thread):
         if not old_event or old_event.name in ["manutencao", "abastecimento", "clima", "transbordo", "deslocamento"]:
             return [event for event in self.events["automaticos"] if event.name == "operacao"][0]
 
-        if old_event.name == "aguardando transbordo":
+        if old_event.name == "aguardando_transbordo":
             return [event for event in self.events["automaticos"] if event.name == "transbordo"][0]
 
         if datetime.datetime.now() >= self.ordem.operador.fim_turno:
-            return [event for event in self.events["manuais"] if event.name == "troca de turno"][0]
+            return [event for event in self.events["manuais"] if event.name == "troca_turno"][0]
 
         if random.random() < 0.8:
             event_list = []
             for event in self.events["automaticos"]:
-                if event.name == "transbordo" and old_event.name != "aguardando transbordo":
+                if event.name == "transbordo" and old_event.name != "aguardando_transbordo":
                     continue
 
                 if event.name == "operacao" and old_event.name == "operacao":

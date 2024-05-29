@@ -41,13 +41,15 @@ async def insere_evento(evento: Evento) -> JSONResponse:
     evento_service = EventoService()
     evento_inserido_id = await evento_service.insere_evento(evento)
 
-    if evento.nome == "fim de ordem":
-        ordem_service = OrdemService()
-        ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, 'F')
+    if evento.nome == "fim_ordem" or evento.nome == "inicio_ordem_servico":
+        ev = {
+            "fim_ordem": "F",
+            "inicio_ordem_servico": "E"
 
-    elif evento.nome == "inicio ordem de servico":
+        }
+
         ordem_service = OrdemService()
-        ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, 'E')
+        ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, ev.get(evento.nome))
 
     return JSONResponse(status_code=201, content={"id": str(evento_inserido_id)})
 
