@@ -113,6 +113,8 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor: 
                 # Query de update
+                senha = gestor_update.senha
+                gestor_update.senha = criptografar_senha(senha)
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -121,6 +123,7 @@ class UsuarioService:
                         telefone = %(telefone)s,
                         status = %(status)s,
                         empresa_id = %(empresa_id)s,
+                        senha = %(senha)s
                     WHERE id = %(id)s and tipo = 'G'
                 """
                 try:
@@ -254,6 +257,8 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor: 
         # Query de update
+                senha = operador_update.senha
+                operador_update.senha = criptografar_senha(senha)
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -263,7 +268,8 @@ class UsuarioService:
                         gestor_id = %(gestor_id)s,
                         unidade_id = %(unidade_id)s,
                         status = %(status)s,
-                        matricula = %(matricula)s,       
+                        matricula = %(matricula)s, 
+                        senha = %(senha)s     
                     WHERE id = %(id)s and tipo = 'O'
                 """  
                 try:
@@ -352,9 +358,6 @@ class UsuarioService:
                     usuarios.append(Usuario(**row))
 
         return usuarios
-
-
-
     
     def validar_credenciais(self, login: str, senha: str) -> Optional[Usuario]:
         with Database() as conn: 
