@@ -258,8 +258,8 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor: 
         # Query de update
-                senha = operador_update.senha
-                operador_update.senha = criptografar_senha(senha)
+        #         senha = operador_update.senha
+        #         operador_update.senha = criptografar_senha(senha)
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -280,7 +280,7 @@ class UsuarioService:
                 finally:
                     conn.commit()
                 
-                operador = self.buscar_gestor(operador_update.id)
+                operador = self.buscar_operador(operador_update.id)
 
                 if not operador:
                     return {}
