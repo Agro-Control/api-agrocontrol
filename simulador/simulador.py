@@ -192,6 +192,9 @@ class EventSimulator(threading.Thread):
                 data['id'] = event.id
                 data['duracao'] = event.duration
 
+            elif event.name in ["fim_ordem", "troca_turno"]:
+                data['duracao'] = event.duration
+
             response = requests.request(metodo, 'http://api:5000/eventos', data=json.dumps(data))
 
             if response:
