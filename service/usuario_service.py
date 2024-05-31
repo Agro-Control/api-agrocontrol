@@ -269,7 +269,7 @@ class UsuarioService:
                         gestor_id = %(gestor_id)s,
                         unidade_id = %(unidade_id)s,
                         status = %(status)s,
-                        matricula = %(matricula)s,  
+                        matricula = %(matricula)s
                     WHERE id = %(id)s and tipo = 'O'
                 """  
                 try:
