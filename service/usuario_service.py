@@ -49,7 +49,7 @@ class UsuarioService:
                     """
 
                 if grupo_id:
-                    sql += " AND u.empresa_id in (select e.id from empresa e where e.grupo_id = %s) "
+                    sql += " AND u.grupo_id = %s"
                     params.append(grupo_id)
 
                 if empresa_id:
@@ -92,9 +92,9 @@ class UsuarioService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, telefone, email, empresa_id, tipo, senha
+                        cpf, nome, telefone, email, empresa_id, grupo_id tipo, senha
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, 'G', %(senha)s)
+                    VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, %(grupo_id)s , 'G', %(senha)s)
                 """
                 try:
                     cursor.execute(insert_query, gestor.dict(), prepare=True)
@@ -236,9 +236,9 @@ class UsuarioService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, email, matricula, turno, gestor_id, unidade_id, tipo, senha
+                        cpf, nome, email, matricula, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, senha
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(unidade_id)s, 'O', %(senha)s)
+                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(grupo_id)s, %(empresa_id)s, %(unidade_id)s, 'O', %(senha)s)
                 """
                 try:
                     cursor.execute(insert_query, operador.dict(), prepare=True)
@@ -319,7 +319,7 @@ class UsuarioService:
                          """
 
                 if grupo_id:
-                    sql += " AND u.empresa_id in (select e.id from empresa e where e.grupo_id = %s) "
+                    sql += " AND u.grupo_id = %s "
                     params.append(grupo_id)
 
                 if empresa_id:
