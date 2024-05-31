@@ -92,7 +92,7 @@ class UsuarioService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, telefone, email, empresa_id, grupo_id tipo, senha
+                        cpf, nome, telefone, email, empresa_id, grupo_id, tipo, senha
                     )
                     VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, %(grupo_id)s , 'G', %(senha)s)
                 """
