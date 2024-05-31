@@ -236,9 +236,10 @@ class UsuarioService:
                 # Query de insert
                 insert_query = """
                     INSERT INTO Usuario (
-                        cpf, nome, email, matricula, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, senha
+                        cpf, nome, email, telefone, matricula, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, senha
                     )
-                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(matricula)s, %(turno)s, %(gestor_id)s, %(grupo_id)s, %(empresa_id)s, %(unidade_id)s, 'O', %(senha)s)
+                    VALUES (%(cpf)s, %(nome)s, %(email)s, %(telefone)s, %(matricula)s, %(turno)s, %(gestor_id)s,
+                     %(grupo_id)s, %(empresa_id)s, %(unidade_id)s, 'O', %(senha)s)
                 """
                 try:
                     cursor.execute(insert_query, operador.dict(), prepare=True)
