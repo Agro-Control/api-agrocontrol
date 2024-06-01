@@ -72,7 +72,6 @@ class UsuarioService:
                     sql += " AND u.status = %s"
                     params.append(status)
 
-                print(sql, flush=True)
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
