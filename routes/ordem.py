@@ -65,9 +65,9 @@ def inserir_ordem(ordem: OrdemServico, token: str = Depends(verify_token(["G"]))
     
     ordem_service = OrdemService()
 
-    ordem_service.inserir_ordem_servico(ordem)
-    
-    return Response(status_code=201)
+    response = ordem_service.inserir_ordem_servico(ordem)
+
+    return Response(status_code=response)
 
 
 @router.put("/ordens")

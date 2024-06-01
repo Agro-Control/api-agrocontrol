@@ -81,9 +81,6 @@ class OrdemService:
         return ordem
 
 
-
-
-    
     def busca_ordens_servicos(self, empresa_id: int | None = None, status: str | None = None):
         ordens = []
         with Database() as conn: 
@@ -139,7 +136,12 @@ class OrdemService:
                 try:
                     cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
                     id_ultimo_registro = cursor.fetchone()[0]
-                
+
+                    for id in ordem_servico.operadores:
+                        if not id:
+                            conn.rollback()
+                            return 404
+
                     values = [f"({id_ultimo_registro}, {id})" for id in ordem_servico.operadores]
 
                     insert_query = f"""
@@ -153,11 +155,12 @@ class OrdemService:
                     print("Deu erro no insert")
                     conn.rollback()
                     raise DatabaseError(e)
+                    return 400
                 finally:
                     conn.commit()
                     # conn.rollback()
 
-        return
+        return 200
 
     def altera_ordem_servico(self, ordem_update: OrdemServico):
         ordem = {}
@@ -180,6 +183,11 @@ class OrdemService:
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
+
+                for id in ordem_update.operadores:
+                    if not id:
+                        conn.rollback()
+                        return {}
 
                 sql = """
                     DELETE FROM ordem_servico_operador oso WHERE oso.ordem_servico_id = %s;
