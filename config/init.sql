@@ -135,12 +135,12 @@ VALUES ('Prime Group'), ('Second Group');
 -- Inserir um admin pela saco (versão final é o unico cara que deve existir)
 INSERT INTO Usuario (nome, email, tipo, senha, grupo_id)
 VALUES ('Diretor 1', 'diretor1@gmail.com', 'D', '$2b$12$X48WhMbJSsKZMmIC2YUHieKpDC6WAC5Y2Y5BIVhQ6bPNpzZtjuCSO', 1),
-VALUES ('Diretor 2', 'diretor2@gmail.com', 'D', '$2b$12$X48WhMbJSsKZMmIC2YUHieKpDC6WAC5Y2Y5BIVhQ6bPNpzZtjuCSO', 2);
+        ('Diretor 2', 'diretor2@gmail.com', 'D', '$2b$12$X48WhMbJSsKZMmIC2YUHieKpDC6WAC5Y2Y5BIVhQ6bPNpzZtjuCSO', 2);
 
 -- Inserir uma empresa
 INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, grupo_id)
 VALUES ('Empresa1', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', 1),
-VALUES ('Empresa2', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', 2);
+        ('Empresa2', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', 2);
 
 -- Inserir um gestor
 INSERT INTO Usuario (cpf, nome, telefone, email, tipo, grupo_id, empresa_id, senha)
