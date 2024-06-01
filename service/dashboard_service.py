@@ -42,7 +42,7 @@ class DashBoardsService:
                     LEFT JOIN ordem_servico os ON os.id = oso.ordem_servico_id
                     INNER JOIN unidade un ON u.unidade_id  = un.id 
                     INNER JOIN empresa e ON  e.id = un.empresa_id 
-                    WHERE os.status = 'A' 
+                    WHERE os.status = 'E' 
                     AND u.tipo = 'O'
                 """
 
@@ -110,7 +110,7 @@ class DashBoardsService:
                         INNER JOIN unidade u ON m.unidade_id  = u.id
                         INNER JOIN empresa e ON u.empresa_id = e.id
                         WHERE m.status = 'A'
-                        AND os.status = 'A' 
+                        AND os.status in ('A', 'E')
                 """
 
                 if grupo_id:
@@ -154,7 +154,7 @@ class DashBoardsService:
                         FROM ordem_servico os
                         INNER JOIN unidade u ON os.unidade_id = u.id 
                         INNER JOIN empresa e ON e.id  = os.empresa_id 
-                        WHERE os.status = 'A'
+                        WHERE os.status in ('A', 'E')
 
                     """
 
