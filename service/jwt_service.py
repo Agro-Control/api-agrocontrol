@@ -49,6 +49,7 @@ def verify_token(required_type: List[str]):
             # Decodificar e validar o token JWT (substituir pela lógica de validação real)
             payload = jwt.decode(token, "segredo", algorithms=["HS256"])
             user_tipo: str = payload.get("tipo")
+            print(user_tipo, flush=True)
             if user_tipo is None or user_tipo not in required_type:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,

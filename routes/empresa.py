@@ -39,7 +39,7 @@ def busca_empresas(status: str = Query(None, description="Status da Empresa"),
     response = empresa_service.buscar_empresas(status=status, codigo=codigo, estado=estado, grupo_id=grupo_id)
 
     if not response:
-        return JSONResponse(status_code= 403, content={"error": "Empresas não encontradas"})
+        return JSONResponse(status_code=403, content={"error": "Empresas não encontradas"})
 
     return {"empresas": response}
  

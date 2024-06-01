@@ -43,8 +43,12 @@ class UsuarioService:
                 params = []
 
                 sql = f"""SELECT 
-                            *
+                            u.*,
+                            e.nome empresa,
+                            un.nome unidade
                         FROM Usuario u
+                        LEFT JOIN empresa e on e.id = u.empresa_id  
+                        LEFT JOIN unidade un on un.id = u.unidade_id
                         WHERE 1=1 and tipo = 'G'
                     """
 
@@ -61,13 +65,14 @@ class UsuarioService:
                     params.append(unidade_id)
 
                 if codigo:
-                    sql += " AND u.nome LIKE %s"
+                    sql += " AND LOWER(u.nome) LIKE LOWER(%s)"
                     params.append(f"%{codigo}%")
 
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
-                
+
+                print(sql, flush=True)
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
@@ -175,8 +180,12 @@ class UsuarioService:
                 params = []
 
                 sql = f"""SELECT 
-                            *
+                            u.*,
+                            e.nome empresa,
+                            un.nome unidade
                         FROM Usuario u
+                        LEFT JOIN empresa e on e.id = u.empresa_id  
+                        LEFT JOIN unidade un on un.id = u.unidade_id 
                         WHERE 1=1 and tipo = 'O'
                     """
 
@@ -189,7 +198,7 @@ class UsuarioService:
                     params.append(f"%{turno}%")
                 
                 if codigo:
-                    sql += " AND u.nome LIKE %s"
+                    sql += " AND LOWER(u.nome) LIKE LOWER(%s)"
                     params.append(f"%{codigo}%")
 
                 if status:
@@ -202,7 +211,7 @@ class UsuarioService:
 	                    INNER JOIN ordem_servico os ON os.id = oso.ordem_servico_id 
             	        WHERE os.status IN ('A', 'E')
                     ) """
-                               
+                print(sql)
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
@@ -257,9 +266,9 @@ class UsuarioService:
         
         with Database() as conn: 
             with conn.cursor() as cursor: 
-        # Query de update
-        #         senha = operador_update.senha
-        #         operador_update.senha = criptografar_senha(senha)
+                # Query de update
+                # senha = operador_update.senha
+                # operador_update.senha = criptografar_senha(senha)
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -279,7 +288,7 @@ class UsuarioService:
                     raise DatabaseError(e)
                 finally:
                     conn.commit()
-                
+
                 operador = self.buscar_operador(operador_update.id)
 
                 if not operador:

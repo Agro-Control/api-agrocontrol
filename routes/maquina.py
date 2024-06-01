@@ -27,14 +27,16 @@ def busca_maquina(maquina_id: int, token: str = Depends(verify_token(["G"]))):
 
 
 @router.get("/maquinas")
-def busca_maquinas(unidade_id: int = Query(None, description="Unidade da Maquina"), 
+def busca_maquinas(unidade_id: int = Query(None, description="Unidade da Maquina"),
+                   empresa_id: int = Query(None, description="Empresa da Maquina"),
                    status: str = Query(None, description="Status da Maquina"),
-                   codigo: str = Query(None, description= "Nome/Codigo da Maquina"),
+                   codigo: str = Query(None, description="Nome/Codigo da Maquina"),
                    token: str = Depends(verify_token(["G"]))):
 
     maquina_service = MaquinaService()
 
-    response = maquina_service.buscar_maquinas(unidade_id=unidade_id, status= status, codigo=codigo)
+    response = maquina_service.buscar_maquinas(unidade_id=unidade_id, empresa_id=empresa_id,
+                                               status=status, codigo=codigo)
     
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Maquina não encontrada"})

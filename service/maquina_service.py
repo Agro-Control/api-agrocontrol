@@ -27,7 +27,7 @@ class MaquinaService:
  
         return maquina
 
-    def buscar_maquinas(self, unidade_id:int | None, codigo: str | None = None, status: str | None = None):
+    def buscar_maquinas(self, empresa_id:int,  unidade_id:int | None, codigo: str | None = None, status: str | None = None):
 
         maquinas = []
         with Database() as conn: 
@@ -41,7 +41,11 @@ class MaquinaService:
                         FROM Maquina m
                         WHERE 1=1
                     """
-                
+
+                if empresa_id:
+                    sql += "AND m.empresa_id %s"
+                    params.append(empresa_id)
+
                 if unidade_id:
                     sql += "AND m.unidade_id = %s"
                     params.append(unidade_id)
