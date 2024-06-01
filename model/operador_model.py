@@ -13,7 +13,5 @@ class Operador(BaseModel):
     data_contratacao:  datetime | None = None
     gestor_id: int | None = None
     empresa_id: int | None = None
-    empresa: str | None = None
-    unidade: str | None = None
 
 #operador1 = Operador(1, "12345678900", "Vinicius", "1", "Vinicius@email.com", "Ativo", "987654321", "2024-03-12")
