@@ -134,25 +134,28 @@ VALUES ('Prime Group'), ('Second Group');
 
 -- Inserir um admin pela saco (versão final é o unico cara que deve existir)
 INSERT INTO Usuario (nome, email, tipo, senha, grupo_id)
-VALUES ('DiretorInicial', 'DiretorInicial@gmail.com', 'D', '$2b$12$X48WhMbJSsKZMmIC2YUHieKpDC6WAC5Y2Y5BIVhQ6bPNpzZtjuCSO', 1);
+VALUES ('Diretor 1', 'diretor1@gmail.com', 'D', '$2b$12$X48WhMbJSsKZMmIC2YUHieKpDC6WAC5Y2Y5BIVhQ6bPNpzZtjuCSO', 1),
+VALUES ('Diretor 2', 'diretor2@gmail.com', 'D', '$2b$12$X48WhMbJSsKZMmIC2YUHieKpDC6WAC5Y2Y5BIVhQ6bPNpzZtjuCSO', 2);
 
 -- Inserir uma empresa
 INSERT INTO Empresa (nome, cnpj, telefone, cep, estado, cidade, bairro, logradouro, grupo_id)
-VALUES ('Empresa1', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', 1);
+VALUES ('Empresa1', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', 1),
+VALUES ('Empresa2', '74363470000156', '41998989898', '82315150', 'PR', 'Curitiba', 'São Braz', 'Concriz', 2);
 
 -- Inserir um gestor
-INSERT INTO Usuario (cpf, nome, telefone, email, tipo, empresa_id, senha)
-VALUES ('21024436047', 'Gestor 1', '999999999', 'gestor1@example.com', 'G', 1, '$2b$12$vOZ5S37hIDGN2Qz/w.XVq.qFdr8jkPqF/NEkLz2dWey7EawMhdfOa');
+INSERT INTO Usuario (cpf, nome, telefone, email, tipo, grupo_id, empresa_id, senha)
+VALUES ('21024436047', 'Gestor 1', '999999999', 'gestor1@example.com', 'G', 1, 1, '$2b$12$vOZ5S37hIDGN2Qz/w.XVq.qFdr8jkPqF/NEkLz2dWey7EawMhdfOa');
 
 -- Inserir duas unidades
 INSERT INTO Unidade (nome, cep, estado, cidade, bairro, logradouro, empresa_id, gestor_id)
-VALUES ('Unidade 1', '81170230', 'PR', 'Curitiba', 'Cidade Industrial', 'Cyro Correia Pereira', 1, 2),
-       ('Unidade 2', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 1, 2);
+VALUES ('Unidade 1', '81170230', 'PR', 'Curitiba', 'Cidade Industrial', 'Cyro Correia Pereira', 1, 1),
+       ('Unidade 2', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 1, 1);
 
 -- Inserir dois operadores
-INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, unidade_id, tipo, senha)
-VALUES ('01590575075', '20240001', 'Operador 1', 'M', 2, 1, 'O', '999999'),
-       ('01590575076', '20240002', 'Operador 2', 'T', 2, 2, 'O', '999989');
+INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, senha)
+VALUES ('01590575075', '202400001', 'Operador 1', 'M', 1, 1, 1, 1, 'O', '999999'),
+       ('01590575076', '202400002', 'Operador 2', 'T', 1, 1, 1, 2, 'O', '999989'),
+       ('73941491024', '202400003', 'Operador 3-SML', 'N', 1, 1, 1, 1, 'O', '999987');
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, unidade_id)
@@ -169,4 +172,4 @@ VALUES (10.5, 20.5, 1000.0, 2, 1, 1, 1, 1);
 
 -- Inserir um talhão
 INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id) 
-VALUES	(1, 3);
+VALUES	(1, 4), (1, 6);
