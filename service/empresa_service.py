@@ -63,7 +63,6 @@ class EmpresaService:
                     if disp:
                         sql += (" AND e.id not in ( select distinct u.empresa_id from usuario u where u.status= 'A' and "
                                 "u.tipo= 'G')")
-                        params.append(grupo_id)
                 
                 cursor.execute(sql, params, prepare=True)
                 
