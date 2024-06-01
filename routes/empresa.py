@@ -31,12 +31,14 @@ def busca_empresas(status: str = Query(None, description="Status da Empresa"),
                    codigo: str = Query(None, description="Nome/Codigo da Empresa"),
                    estado: str = Query(None, description="Nome do Estado da Empresa"),
                    grupo_id: int = Query(None, description="Grupo da Empresa"),
+                    disp_gestor:bool = Query(None, description="Empresas sem gestor"),
                    token: str = Depends(verify_token(["D"]))
                    ):
 
     empresa_service = EmpresaService()
 
-    response = empresa_service.buscar_empresas(status=status, codigo=codigo, estado=estado, grupo_id=grupo_id)
+    response = empresa_service.buscar_empresas(status=status, codigo=codigo, estado=estado, disp=disp_gestor,
+                                               grupo_id=grupo_id)
 
     if not response:
         return JSONResponse(status_code=403, content={"error": "Empresas não encontradas"})
