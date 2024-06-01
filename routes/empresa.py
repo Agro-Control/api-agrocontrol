@@ -14,14 +14,14 @@ router = APIRouter()
 def busca_empresa(empresa_id: int, token: str = Depends(verify_token(["D", "G"]))) -> Empresa:
     
     if not empresa_id:
-        return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
     empresa_service = EmpresaService()
 
     response = empresa_service.buscar_empresa(empresa_id)
     
     if not response or isinstance(response, Dict):
-        return JSONResponse(status_code= 403, content={"error": "Empresa não encontrada"})
+        return JSONResponse(status_code= 404, content={"error": "Empresa não encontrada"})
 
     return response
 
@@ -41,7 +41,7 @@ def busca_empresas(status: str = Query(None, description="Status da Empresa"),
                                                grupo_id=grupo_id)
 
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Empresas não encontradas"})
+        return JSONResponse(status_code=404, content={"error": "Empresas não encontradas"})
 
     return {"empresas": response}
  
@@ -49,7 +49,7 @@ def busca_empresas(status: str = Query(None, description="Status da Empresa"),
 def inserir_empresa(empresa: Empresa, token: str = Depends(verify_token(["D"]))):
     
     if not empresa:
-        return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
     empresa_service = EmpresaService()
 
@@ -61,13 +61,13 @@ def inserir_empresa(empresa: Empresa, token: str = Depends(verify_token(["D"])))
 def atualiza_empresa(empresa: Empresa, token: str = Depends(verify_token(["D", "G"]))):
 
     if not empresa or not empresa.id:
-        return JSONResponse(status_code=399, content={"detail": "Requisição inválida"})
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     
     empresa_service = EmpresaService()
     
     response = empresa_service.altera_empresa(empresa)
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Erro ao atualizar empresa."})
+        return JSONResponse(status_code=404, content={"error": "Erro ao atualizar empresa."})
 
     return response
 
