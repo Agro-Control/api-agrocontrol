@@ -90,9 +90,9 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, gestor.email):
+                if not self.verifica_email_existente(cursor, gestor.id, gestor.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, gestor.cpf):
+                if not self.verifica_cpf_existente(cursor, gestor.id, gestor.cpf):
                     return 409, "CPF já existente"
 
                 senha = gerar_senha_aleatoria()
@@ -122,9 +122,9 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, gestor_update.email):
+                if not self.verifica_email_existente(cursor, gestor_update.id, gestor_update.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, gestor_update.cpf):
+                if not self.verifica_cpf_existente(cursor, gestor_update.id, gestor_update.cpf):
                     return 409, "CPF já existente"
 
                 # Query de update
@@ -238,9 +238,9 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, operador.email):
+                if not self.verifica_email_existente(cursor, operador.id, operador.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, operador.cpf):
+                if not self.verifica_cpf_existente(cursor, operador.id, operador.cpf):
                     return 409, "CPF já existente"
 
                 queyr_qtd_op = "SELECT COUNT(*) FROM Usuario WHERE tipo = 'O'"
@@ -282,9 +282,9 @@ class UsuarioService:
         with Database() as conn: 
             with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, operador_update.email):
+                if not self.verifica_email_existente(cursor, operador_update.id, operador_update.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, operador_update.cpf):
+                if not self.verifica_cpf_existente(cursor, operador_update.id, operador_update.cpf):
                     return 409, "CPF já existente"
 
                 # Query de update
@@ -335,25 +335,40 @@ class UsuarioService:
                     return None
 
 
-    def verifica_email_existente(self, db, email):
+    def verifica_email_existente(self, db, user, email):
         sql = f"""
-                SELECT u.email
+                SELECT 
+                    u.id id ,
+                    u.email email
                 FROM Usuario u
                 WHERE u.email = %s;
             """
         db.execute(sql, (email,), prepare=True)
         result = db.fetchone()
-        return False if result else True
 
-    def verifica_cpf_existente(self, db, cpf):
+        if result:
+            id, email = result
+            if id != user:
+                return False
+        return True
+
+
+    def verifica_cpf_existente(self, db, user, cpf):
         sql = f"""
-                SELECT u.cpf
+                SELECT
+                    u.id id,
+                    u.cpf cpf
                 FROM Usuario u
                 WHERE u.cpf = %s;
             """
         db.execute(sql, (cpf,), prepare=True)
         result = db.fetchone()
-        return False if result else True
+
+        if result:
+            id, cpf = result
+            if id != user:
+                return False
+        return True
 
 
     @staticmethod
