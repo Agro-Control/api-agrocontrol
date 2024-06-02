@@ -28,7 +28,8 @@ def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Operad
 
 
 @router.get("/operadores")
-def busca_operadores(unidade_id: int = Query(None, description="Unidade do Operador"),
+def busca_operadores(empresa_id: int = Query(None, description="Empresa do Operador"),
+                    unidade_id: int = Query(None, description="Unidade do Operador"),
                      turno: str = Query(None, description="Turno do Operador"),
                      status: str = Query(None, description="Status do Operador"),
                      codigo: str = Query(None, description="Nome/Codigo do Operador"),
@@ -36,7 +37,7 @@ def busca_operadores(unidade_id: int = Query(None, description="Unidade do Opera
                      token: str = Depends(verify_token(["G"]))):
     operador_service = UsuarioService()
 
-    response = operador_service.buscar_operadores(unidade_id=unidade_id, turno=turno, status=status, codigo=codigo,
+    response = operador_service.buscar_operadores(empresa_id=empresa_id,unidade_id=unidade_id, turno=turno, status=status, codigo=codigo,
                                                   disp_ordem=disponibilidade_ordem)
 
     if not response:

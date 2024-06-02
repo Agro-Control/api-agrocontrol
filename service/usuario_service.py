@@ -180,8 +180,8 @@ class UsuarioService:
 
         return operador
 
-    def buscar_operadores(self, unidade_id: int | None = None, turno: str | None = None, codigo: str | None = None, status: str | None = None, 
-                          disp_ordem: bool | None = None):
+    def buscar_operadores(self, empresa_id: int | None = None, unidade_id: int | None = None, turno: str | None = None,
+                          codigo: str | None = None, status: str | None = None, disp_ordem: bool | None = None):
         operadores = []
         
         with Database() as conn: 
@@ -198,6 +198,10 @@ class UsuarioService:
                         LEFT JOIN unidade un on un.id = u.unidade_id 
                         WHERE 1=1 and tipo = 'O'
                     """
+
+                if empresa_id:
+                    sql += "AND u.empresa_id = %s"
+                    params.append(unidade_id)
 
                 if unidade_id:
                     sql += "AND u.unidade_id = %s"
