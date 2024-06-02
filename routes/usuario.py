@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 
+from model.gestor_model import Gestor
+from model.operador_model import Operador
 from service.jwt_service import verify_token
 from service.usuario_service import UsuarioService
 from model.usuario_model import Usuario
@@ -10,8 +12,8 @@ from typing import Dict, List
 router = APIRouter()
 
 
-@router.get("/operador/{id}", response_model=Usuario)
-def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Usuario:
+@router.get("/operador/{id}", response_model=Operador)
+def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Operador:
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -48,25 +50,43 @@ def inserir_operador(operador: Usuario, token: str = Depends(verify_token(["G"])
     if not operador:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
+    if not operador.email or not operador.cpf:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
     operador_service = UsuarioService()
 
-    operador_service.inserir_operador(operador)
+    operador.cpf = operador.cpf.replace('.', '').replace('-', '')
+    if not UsuarioService.valida_cpf(operador.cpf):
+        return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
+
+    status, response = operador_service.inserir_operador(operador)
+
+    if status == 409:
+        return JSONResponse(status_code=status, content={"error": response})
 
     return Response(status_code=201)
 
 
 @router.put("/operadores")
-def atualiza_operador(operador: Usuario, token: str = Depends(verify_token(["G"]))):
+def atualiza_operador(operador: Operador, token: str = Depends(verify_token(["G"]))):
     if not operador or not operador.id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
+    if not operador.email or not operador.cpf:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     operador_service = UsuarioService()
 
-    response = operador_service.altera_operador(operador)
-    if not response:
-        return JSONResponse(status_code=404, content={"error": "Erro ao atualizar operador."})
+    operador.cpf = operador.cpf.replace('.', '').replace('-', '')
+    if not UsuarioService.valida_cpf(operador.cpf):
+        return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
 
-    return response
+    status, response = operador_service.altera_operador(operador)
+
+    if status in [404, 409]:
+        return JSONResponse(status_code=status, content={"error": response})
+
+    return status, response
 
 
 @router.get("/gestor/{id}", response_model=Usuario)
@@ -108,41 +128,42 @@ def inserir_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
     if not gestor:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
-    gestor_service = UsuarioService()
-
-    gestor_service.inserir_gestor(gestor)
-
-    return Response(status_code=201)
-
-
-@router.put("/gestores")
-def atualiza_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
-    if not gestor or not gestor.id:
+    if not gestor.email or not gestor.cpf:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     gestor_service = UsuarioService()
 
-    response = gestor_service.altera_gestor(gestor)
-    if not response:
-        return JSONResponse(status_code=404, content={"error": "Erro ao atualizar gestor."})
+    gestor.cpf = gestor.cpf.replace('.', '').replace('-', '')
 
-    return response
+    if not UsuarioService.valida_cpf(gestor.cpf):
+        return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
+
+    status, response = gestor_service.inserir_gestor(gestor)
+
+    if status == 409:
+        return JSONResponse(status_code=409, content={"error": response})
+
+    return Response(status_code=status)
 
 
-@router.get("/usuarios")
-def busca_usuarios_grupo(grupo_id: int = Query(None, description="Numero do grupo empresarial do Usuario"),
-                        empresa_id: int = Query(None, description="Empresa do Usuario"),
-                        unidade_id: int = Query(None, description="Unidade do Usuario"),
-                        nome: str = Query(None, description="Nome do Usuario"),
-                        status: str = Query(None, description="Status do Usuario"),
-                        tipo: str = Query(None, description="Tipo do Usuario"),
-                        token: str = Depends(verify_token(["D"]))):
 
-    usuario_service = UsuarioService()
-    # print(type(tipos))
-    response = usuario_service.busca_usuarios(grupo_id, empresa_id, unidade_id, nome, status, tipo)
-    if not response:
+@router.put("/gestores")
+def atualiza_gestor(gestor: Gestor, token: str = Depends(verify_token(["D"]))):
+    if not gestor or not gestor.id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
-        return JSONResponse(status_code=404, content={"error": "Erro"})
+    if not gestor.email or not gestor.cpf:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
-    return {"usuarios": response}
+    gestor_service = UsuarioService()
+
+    gestor.cpf = gestor.cpf.replace('.', '').replace('-', '')
+    if not UsuarioService.valida_cpf(gestor.cpf):
+        return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
+
+    status, response = gestor_service.altera_gestor(gestor)
+
+    if status in [404, 409]:
+        return JSONResponse(status_code=status, content={"error": response})
+
+    return status, response

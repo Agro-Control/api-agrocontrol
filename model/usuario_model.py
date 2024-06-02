@@ -17,6 +17,3 @@ class Usuario(BaseModel):
     empresa_id: int | None = None
     unidade_id: int | None = None
     grupo_id: int | None = None
-    empresa: str | None = None
-    unidade: str | None = None
-

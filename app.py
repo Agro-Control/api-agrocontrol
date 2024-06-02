@@ -56,7 +56,7 @@ def login(login: Login):
         usuario.senha = None  # ou "" ou qualquer outro valor que você preferir
 
         # Gerar token JWT
-        tempo_token = timedelta(minutes=60)
+        tempo_token = timedelta(minutes=1440)
         token = token_24horas(data={"sub": usuario.email, "tipo": usuario.tipo, "id": usuario.id}, expires_delta=tempo_token)
         
         # Retorna o usuário junto com o token JWT

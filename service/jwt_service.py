@@ -14,11 +14,14 @@ class AuthValidation(OAuth2PasswordBearer):
         super().__init__(tokenUrl)
         self.request_form_class = OAuth2PasswordRequestForm
 
+
 oauth2_scheme = AuthValidation(tokenUrl="login")
+
 
 def gerar_senha_aleatoria(length=12):
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
+
 
 def enviar_email(destinatario, senha):
     msg = EmailMessage()
@@ -31,10 +34,12 @@ def enviar_email(destinatario, senha):
         smtp.login('vinie.antuness@gmail.com', 'ahkgbjikxyxzcscm')
         smtp.send_message(msg)
 
+
 def criptografar_senha(senha):
     salt = bcrypt.gensalt()
     senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     return senha_hash
+
 
 def token_24horas(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
@@ -43,13 +48,13 @@ def token_24horas(data: dict, expires_delta: timedelta):
     encoded_jwt = jwt.encode(to_encode, "segredo", algorithm="HS256")
     return encoded_jwt
 
+
 def verify_token(required_type: List[str]):
     def verify(token: str = Depends(oauth2_scheme)):
         try:
             # Decodificar e validar o token JWT (substituir pela lógica de validação real)
             payload = jwt.decode(token, "segredo", algorithms=["HS256"])
             user_tipo: str = payload.get("tipo")
-            print(user_tipo, flush=True)
             if user_tipo is None or user_tipo not in required_type:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
