@@ -12,4 +12,3 @@ class Gestor(BaseModel):
     data_contratacao:  datetime | None = None
     empresa_id: int | None = None
     empresa: str | None = None
-    unidade: str | None = None
