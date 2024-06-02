@@ -201,7 +201,7 @@ class UsuarioService:
 
                 if empresa_id:
                     sql += "AND u.empresa_id = %s"
-                    params.append(unidade_id)
+                    params.append(empresa_id)
 
                 if unidade_id:
                     sql += "AND u.unidade_id = %s"
