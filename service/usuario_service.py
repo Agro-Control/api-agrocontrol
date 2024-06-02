@@ -230,7 +230,7 @@ class UsuarioService:
                     return []
                 
                 for row in result:
-                    operadores.append(Usuario(**row))
+                    operadores.append(Operador(**row))
 
         return operadores
 
