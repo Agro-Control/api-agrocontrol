@@ -197,3 +197,58 @@ class EventoService:
                 raise EventError(ex)
 
         return manutencao_maquinas
+
+
+    async def dash_tempo_operacao_producao(self, grupo_id: int, empresa_id: int):
+        operacional = {}
+        async with Mongo() as client:
+            try:
+
+                now = datetime.datetime.now()
+
+                if grupo_id:
+                    criterio = {"grupo_id": grupo_id}
+                else:
+                    criterio = {"empresa_id": empresa_id}
+
+
+                pipeline = [
+                    {
+                        "$match": {
+                            **criterio,
+                            "grupo_id": 1,
+                            "data_inicio": {"$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
+                            "data_fim": {"$lte": datetime.datetime(year=now.year, month=now.month, day=now.day, hour=23,
+                                                                   minute=59, second=59)},
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": '$nome',
+                            'count': {'$sum': 1},  # Contar o número de eventos de cada tipo
+                            "duracao_total": {'$sum': {'$ifNull': ['$duracao', 0]}}
+                        }
+                    }
+                ]
+
+                operacional = {
+                    "operacionais": 0,
+                    "improdutivos": 0,
+                    "manutencao": 0,
+                    "tempo_jornada_total": 0
+                }
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+
+                    if result['_id'] in ["operacao", "transbordo", "deslocamento"]:
+                        operacional['operacionais'] = operacional.get('operacionais', 0) + result['duracao_total']
+                    elif result['_id'] == 'manutencao':
+                        operacional['manutencao'] = operacional.get('manutencao', 0) + result['duracao_total']
+                    else:
+                        operacional['improdutivos'] = operacional.get('improdutivos', 0) + result['duracao_total']
+
+                    operacional['tempo_jornada_total'] = operacional.get('tempo_jornada_total', 0) + result['duracao_total']
+            except Exception as ex:
+                    raise EventError(ex)
+
+        return operacional

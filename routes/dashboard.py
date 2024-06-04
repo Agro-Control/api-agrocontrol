@@ -78,7 +78,7 @@ def ordem_status(
 
 
 @router.get("/dashboards/ordem_eventos")
-async def ordem_status(ordem_id: int = Query(None, description="Ordem da Empresa")):
+async def ordem_eventos(ordem_id: int = Query(None, description="Ordem da Empresa")):
 
     if not ordem_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -109,3 +109,21 @@ async def ordem_status(grupo_id: int = Query(None, description="Empresa consulta
         return JSONResponse(status_code=403, content={"error": "Sem eventos"})
 
     return response
+
+
+@router.get("/dashboards/tempo_operacional")
+async def ordem_status(grupo_id: int = Query(None, description="Empresa consulta de maquinas e manutencao"),
+                       empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao")):
+
+    if not empresa_id and not grupo_id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
+    evento_service = EventoService()
+
+    response = await evento_service.dash_tempo_operacao_producao(grupo_id=grupo_id, empresa_id=empresa_id)
+
+    if not response:
+        return JSONResponse(status_code=403, content={"error": "Sem operacional"})
+
+    return response
+
