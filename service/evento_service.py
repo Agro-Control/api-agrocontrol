@@ -106,7 +106,7 @@ class EventoService:
 
         return qtd_eventos
 
-    async def dash_manutencao_maquina(self, empresa_id: int):
+    async def dash_manutencao_maquina(self, grupo_id: int, empresa_id: int):
         manutencao_maquinas = {}
 
         async with Mongo() as client:
@@ -114,10 +114,15 @@ class EventoService:
 
                 now = datetime.datetime.now()
 
+                if grupo_id:
+                    criterio = {"grupo_id": grupo_id}
+                else:
+                    criterio = {"empresa_id": empresa_id}
+
                 pipeline = [
                     {
                         "$match": {
-                            "empresa_id": empresa_id,
+                            **criterio,
                             "data_inicio": {
                                 "$gte": datetime.datetime(year=now.year, month=now.month, day=1),
                                 "$lt": datetime.datetime(year=2024, month=(now.month + 1 if now.month <=12 else 1),
@@ -145,7 +150,7 @@ class EventoService:
                 pipeline = [
                     {
                         "$match": {
-                            "empresa_id": empresa_id,
+                            **criterio,
                             "data_inicio": {
                                 "$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
                             "data_fim": {
@@ -166,7 +171,7 @@ class EventoService:
                 pipeline = [
                     {
                         "$match": {
-                            "empresa_id": empresa_id,
+                            **criterio,
                             "data_inicio": {
                                 "$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
                             "data_fim": {
