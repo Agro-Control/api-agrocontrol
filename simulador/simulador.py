@@ -16,7 +16,7 @@ DB_CONN_STR = """
     dbname=postgres
     user=postgres
     password=postgres
-    host=localhost
+    host=postgresdb
     port=5432
 """
 
@@ -201,7 +201,7 @@ class EventSimulator(threading.Thread):
             elif event.name in ["fim_ordem", "troca_turno"]:
                 data['duracao'] = event.duration
 
-            response = requests.request(metodo, 'http://localhost:5000/eventos', data=json.dumps(data))
+            response = requests.request(metodo, 'http://api:5000/eventos', data=json.dumps(data))
 
             if response:
                 response = response.json()
