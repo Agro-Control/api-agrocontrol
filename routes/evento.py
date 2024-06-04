@@ -4,13 +4,13 @@ from service.jwt_service import verify_token
 from service.ordem_service import OrdemService
 from service.evento_service import EventoService
 from fastapi.responses import JSONResponse
-from fastapi import Response
+from fastapi import Response, Query
 from model.evento_model import Evento
 
 router = APIRouter()
 
 @router.get("/eventos/{id_ordem}")
-async def eventos_por_ordem(id_ordem: int):
+async def eventos_por_ordem(id_ordem: int,  nome: str = Query(None, description="Nome do evento")):
 
     if not id_ordem:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
@@ -24,7 +24,7 @@ async def eventos_por_ordem(id_ordem: int):
 
     evento_service = EventoService()
 
-    eventos = await evento_service.busca_eventos_ordem(id_ordem)
+    eventos = await evento_service.busca_eventos_ordem(id_ordem, nome=nome)
 
     if not eventos:
         return JSONResponse(status_code=404, content={"error": "Eventos não encontrados"})

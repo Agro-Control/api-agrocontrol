@@ -9,11 +9,14 @@ class EventoService:
     def __init__(self):
         pass
 
-    async def busca_eventos_ordem(self, id_ordem: int):
+    async def busca_eventos_ordem(self, id_ordem: int, nome: str = None):
 
         eventos = []
         async with Mongo() as client:
             query = {"ordem_servico_id": int(id_ordem)}
+
+            if nome:
+                query['nome'] = str(nome)
 
             async for documento in client.agro_control.eventos.find(query):
                 evento = Evento()
@@ -25,6 +28,8 @@ class EventoService:
                 evento.ordem_servico_id = documento.get('ordem_servico_id', None)
                 evento.maquina_id = documento.get('maquina_id', None)
                 evento.operador_id = documento.get('operador_id', None)
+                evento.empresa_id = documento.get('empresa_id', None)
+                evento.grupo_id = documento.get('grupo_id', None)
                 eventos.append(evento)
 
         return eventos

@@ -16,7 +16,7 @@ DB_CONN_STR = """
     dbname=postgres
     user=postgres
     password=postgres
-    host=postgresdb
+    host=localhost
     port=5432
 """
 
@@ -57,10 +57,12 @@ class Ordem:
 
 
 class Operador:
-    def __init__(self, id, turno):
+    def __init__(self, id, empresa_id, grupo_id, turno):
         self.id_ = id
         self.turno = turno
         self.fim_turno = self.get_fim_turno()
+        self.empresa_id = empresa_id
+        self.grupo_id = grupo_id
 
     def get_fim_turno(self):
         now = datetime.datetime.now()
@@ -100,7 +102,9 @@ class EventSimulator(threading.Thread):
         print(f"Iniciando o simulador da Ordem de serviço: {self.ordem.id_}, "
               f"OPERADOR: {self.ordem.operador.id_}, "
               f"TURNO: {self.ordem.operador.turno}, "
-              f"MAQUINA: {self.ordem.maquina.id_}", flush=True)
+              f"MAQUINA: {self.ordem.maquina.id_}, "
+              f"EMPRESA: {self.ordem.operador.empresa_id}, "
+              f"GRUPO: {self.ordem.operador.grupo_id}", flush=True)
 
         if self.ordem.status == 'A':
             event = Event("inicio_ordem_servico")
@@ -183,6 +187,8 @@ class EventSimulator(threading.Thread):
                 "ordem_servico_id": self.ordem.id_,
                 "operador_id": self.ordem.operador.id_,
                 "maquina_id": self.ordem.maquina.id_,
+                "empresa_id": self.ordem.operador.empresa_id,
+                "grupo_id": self.ordem.operador.grupo_id,
                 "nome": event.name,
                 "data_inicio": event.data_inicio.isoformat(),
                 "data_fim": event.data_fim.isoformat() if event.data_fim else None
@@ -195,7 +201,7 @@ class EventSimulator(threading.Thread):
             elif event.name in ["fim_ordem", "troca_turno"]:
                 data['duracao'] = event.duration
 
-            response = requests.request(metodo, 'http://api:5000/eventos', data=json.dumps(data))
+            response = requests.request(metodo, 'http://localhost:5000/eventos', data=json.dumps(data))
 
             if response:
                 response = response.json()
@@ -228,7 +234,7 @@ class Deamon:
 
     def start(self):
         self.runnig = True
-        time.sleep(15)  # sleep de segurança
+        time.sleep(5)  # sleep de segurança
 
         while self.runnig:
             print("Running all time...")
@@ -242,7 +248,9 @@ class Deamon:
                                 os.maquina_id as maquina_id,
                                 oso.operador_id as operador_id,
                                 os.status status,
-                                u.turno as turno
+                                u.turno as turno,
+                                u.empresa_id empresa_id,
+                                u.grupo_id grupo_id
                             FROM ordem_servico os
                             INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
                             INNER JOIN usuario u ON u.id = oso.operador_id
@@ -252,13 +260,12 @@ class Deamon:
                             AND os.data_inicio <= NOW()
                             AND u.nome LIKE '%-SML';
                         """
-
                         cursor.execute(sql)
                         result = cursor.fetchall()
 
                         for row in result:
                             if row['id'] not in self.ordens_ativas.copy():
-                                operador = Operador(row['operador_id'], row['turno'])
+                                operador = Operador(row['operador_id'],row['empresa_id'], row['grupo_id'], row['turno'])
                                 maquina = Maquina(row['maquina_id'])
                                 ordem = Ordem(row['id'], maquina, operador, row['status'])
 
