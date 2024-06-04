@@ -1,3 +1,5 @@
+import datetime
+
 from connection.mongo import Mongo
 from model.evento_model import Evento
 from errors import EventError
@@ -103,3 +105,90 @@ class EventoService:
                 raise EventError(ex)
 
         return qtd_eventos
+
+    async def dash_manutencao_maquina(self, empresa_id: int):
+        manutencao_maquinas = {}
+
+        async with Mongo() as client:
+            try:
+
+                now = datetime.datetime.now()
+
+                pipeline = [
+                    {
+                        "$match": {
+                            "empresa_id": empresa_id,
+                            "data_inicio": {
+                                "$gte": datetime.datetime(year=now.year, month=now.month, day=1),
+                                "$lt": datetime.datetime(year=2024, month=(now.month + 1 if now.month <=12 else 1),
+                                                         day=now.day)
+                            },
+                            "nome": "manutencao"
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": '$nome',
+                            'count': {'$sum': 1},  # Contar o número de eventos de cada tipo
+                            "duracao_total": {"$sum": "$duracao"}
+                        }
+                    }
+                ]
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    manutencao_maquinas.update({
+                        "evento": result['_id'],
+                        "qtd_eventos_mes": result['count'],
+                        "tempo_total_manutencao": result['duracao_total']
+                    })
+
+                pipeline = [
+                    {
+                        "$match": {
+                            "empresa_id": empresa_id,
+                            "data_inicio": {
+                                "$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
+                            "data_fim": {
+                                "$lte": datetime.datetime(year=now.year, month=now.month, day=now.day, hour=23,
+                                                          minute=59, second=59)},
+                            "nome": "manutencao"
+                        }
+                    },
+                    {
+                        "$count": "eventos_manutencao_dia_atual"
+                    }
+
+                ]
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    manutencao_maquinas.update(result)
+
+                pipeline = [
+                    {
+                        "$match": {
+                            "empresa_id": empresa_id,
+                            "data_inicio": {
+                                "$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
+                            "data_fim": {
+                                "$lte": datetime.datetime(year=now.year, month=now.month, day=now.day, hour=23,
+                                                          minute=59, second=59)},
+                            "nome": "manutencao"
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": "$maquina_id",
+                            "count": {'$sum': 1}
+                        }
+                    },
+                    {
+                        "$count": "qtd_maquinas_manutencao_dia"
+                    }
+                ]
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    manutencao_maquinas.update(result)
+
+            except Exception as ex:
+                raise EventError(ex)
+
+        return manutencao_maquinas

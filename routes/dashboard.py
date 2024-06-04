@@ -88,6 +88,23 @@ async def ordem_status(ordem_id: int = Query(None, description="Ordem da Empresa
     response = await evento_service.dash_eventos_ordem(ordem_id)
 
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Dash não construido"})
+        return JSONResponse(status_code=403, content={"error": "Sem eventos para a ordem"})
+
+    return response
+
+
+
+@router.get("/dashboards/maquinas_manutencao")
+async def ordem_status(empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao")):
+
+    if not empresa_id:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
+    evento_service = EventoService()
+
+    response = await evento_service.dash_manutencao_maquina(empresa_id)
+
+    if not response:
+        return JSONResponse(status_code=403, content={"error": "Sem eventos"})
 
     return response
