@@ -124,6 +124,8 @@ class EventSimulator(threading.Thread):
 
             if current_event.name in ["fim_ordem", "troca_turno"]:
                 current_event.set_data_fim(data_fim=datetime.datetime.now())
+                old_event.set_data_fim(data_fim=datetime.datetime.now())
+                self.send_event(old_event, "PUT")
                 self.send_event(current_event)
                 break
 
