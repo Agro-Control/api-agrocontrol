@@ -32,9 +32,10 @@ class Event:
         self.set_new_duration()
         self.data_inicio = None
         self.data_fim = None
+        self.ocioso = None
 
-    def set_new_duration(self):
-        self.duration = math.ceil(random.uniform(self.min_duration, self.max_duration))
+    def set_new_duration(self, duration=None):
+        self.duration = math.ceil(random.uniform(self.min_duration, self.max_duration)) if not duration else duration
 
     def set_data_inicio(self, data_inicio):
         self.data_inicio = data_inicio
@@ -42,6 +43,9 @@ class Event:
     def set_data_fim(self,  data_fim):
         self.data_fim = data_fim
 
+    def set_ociosidade(self):
+        self.ocioso = math.ceil(self.duration / 0.3)
+        self.set_new_duration(self.duration + self.ocioso)
 
 class Maquina:
     def __init__(self, id):
@@ -84,16 +88,16 @@ class EventSimulator(threading.Thread):
 
         self.events = {
             "automaticos": [
-                Event("operacao", 5, 10, 0.7),
-                Event("transbordo", 1, 5, 0.1),
-                Event("deslocamento", 1, 5, 0.2),
+                Event("operacao", 10, 30, 0.7),
+                Event("aguardando_transbordo_automatico", 2, 5, 0.1),
+                Event("deslocamento", 1, 3, 0.2),
             ],
             "manuais": [
-                Event("aguardando_transbordo", 1, 2, 0.3),
-                Event("manutencao", 1, 2, 0.2),
-                Event("clima", 1, 2, 0.01),
-                Event("abastecimento", 1, 2, 0.1),
-                Event("troca_turno", 1, 2),
+                Event("aguardando_transbordo", 2, 5, 0.3),
+                Event("manutencao", 60, 95, 0.2),
+                Event("clima", 30, 240, 0.01),
+                Event("abastecimento", 7, 10, 0.1),
+                Event("troca_turno", 10, 15),
                 Event("fim_ordem", probability=0.01)
             ]
         }
@@ -129,6 +133,12 @@ class EventSimulator(threading.Thread):
                 self.send_event(current_event)
                 break
 
+            if current_event.name == "aguardando_transbordo_automatico":
+                if math.ceil(current_event.duration/0.8) > current_event.max_duration:
+                    current_event.set_ociosidade()
+                else:
+                    current_event.ocioso = None
+
             if current_event.name == "clima":
                 self.clima_event = False
             elif current_event.name == "abastecimento":
@@ -153,19 +163,16 @@ class EventSimulator(threading.Thread):
         if not old_event or old_event.name in ["manutencao", "abastecimento", "clima", "transbordo", "deslocamento"]:
             return [event for event in self.events["automaticos"] if event.name == "operacao"][0]
 
-        if old_event.name == "aguardando_transbordo":
-            return [event for event in self.events["automaticos"] if event.name == "transbordo"][0]
-
         if datetime.datetime.now() >= self.ordem.operador.fim_turno:
             return [event for event in self.events["manuais"] if event.name == "troca_turno"][0]
 
         if random.random() < 0.8:
             event_list = []
             for event in self.events["automaticos"]:
-                if event.name == "transbordo" and old_event.name != "aguardando_transbordo":
+                if event.name == "operacao" and old_event.name == "operacao":
                     continue
 
-                if event.name == "operacao" and old_event.name == "operacao":
+                if event.name == "aguardando_transbordo_automatico" and old_event != "aguardando_transbordo_automatico":
                     continue
 
                 event_list.append(event)
@@ -199,6 +206,9 @@ class EventSimulator(threading.Thread):
             if metodo == "PUT":
                 data['id'] = event.id
                 data['duracao'] = event.duration
+
+                if event.name == "aguardando_transbordo_automatico" and event.ocioso:
+                    data['ocioso'] = event.ocioso
 
             elif event.name in ["fim_ordem", "troca_turno"]:
                 data['duracao'] = event.duration
