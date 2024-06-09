@@ -80,9 +80,8 @@ class EventoService:
             "ultimos_eventos": [],
             "qtd_manutencao_mes": 0,
             "tempo_total_manutencao_mes": 0,
-            "qtd_eventos_dia": 0,
+            "qtd_manutencao_dia": 0,
             "tempo_total_manutencao_dia": 0
-
         }
 
         async with Mongo() as client:
