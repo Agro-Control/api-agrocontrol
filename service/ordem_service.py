@@ -225,7 +225,11 @@ class OrdemService:
                 update_query = """
                     UPDATE Ordem_Servico
                     SET 
-                        status = %s
+                        status = %s,
+                        data_fim = CASE
+                            WHEN %s = 'F' THEN NOW()
+                            ELSE NULL
+                        END
                     WHERE id = %s;
                 """
 

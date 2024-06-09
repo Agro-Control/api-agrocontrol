@@ -45,7 +45,6 @@ async def insere_evento(evento: Evento) -> JSONResponse:
         ev = {
             "fim_ordem": "F",
             "inicio_ordem_servico": "E"
-
         }
 
         ordem_service = OrdemService()

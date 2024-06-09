@@ -315,7 +315,8 @@ class DashBoardsService:
         async with Mongo() as client:
             try:
 
-                now = datetime.datetime.now()
+                now = datetime.datetime.now().date()
+                now = datetime.datetime.combine(now, datetime.time.min)
 
                 if grupo_id:
                     criterio = {"grupo_id": grupo_id}
@@ -406,7 +407,8 @@ class DashBoardsService:
         async with Mongo() as client:
             try:
 
-                now = datetime.datetime.now()
+                now = datetime.datetime.now().date()
+                now = datetime.datetime.combine(now, datetime.time.min)
 
                 if grupo_id:
                     criterio = {"grupo_id": grupo_id}

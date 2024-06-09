@@ -300,7 +300,7 @@ class UsuarioService:
                         nome = %(nome)s,
                         turno = %(turno)s,
                         email = %(email)s,
-                        cpf = %(cpf)s,
+                        cpf = %(cpf)s,      
                         gestor_id = %(gestor_id)s,
                         unidade_id = %(unidade_id)s,
                         status = %(status)s
@@ -311,8 +311,23 @@ class UsuarioService:
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
-                finally:
-                    conn.commit()
+
+                if operador_update.status == 'I':
+                    delete_query = """DELETE from ordem_servico_operador oso
+                                    INNER JOIN ordem_servico os ON os.id = oso.ordem_servico_id 
+                                    WHERE os.empresa_id = %S
+                                    AND os.status IN ('A', 'E')
+                                    AND oso.operador_id = %s
+                                """
+                    params = (operador_update.empresa_id, operador_update.id, )
+
+                    try:
+                        cursor.execute(delete_query, params, prepare=True)
+                    except Exception as e:
+                        conn.rollback()
+                        raise DatabaseError(e)
+
+                conn.commit()
 
         operador = self.buscar_operador(operador_update.id)
 

@@ -27,7 +27,8 @@ class MaquinaService:
  
         return maquina
 
-    def buscar_maquinas(self, empresa_id:int,  unidade_id:int | None, codigo: str | None = None, status: str | None = None):
+    def buscar_maquinas(self, empresa_id:int,  unidade_id:int | None, codigo: str | None = None, status: str | None = None,
+                        diponibilidade_ordem: bool | None = None):
 
         maquinas = []
         with Database() as conn: 
@@ -43,11 +44,15 @@ class MaquinaService:
                     """
 
                 if empresa_id:
-                    sql += "AND m.empresa_id %s"
+                    sql += " AND m.unidade_id in (select u.id from unidade u where u.empresa_id = %s and u.status = 'A')"
                     params.append(empresa_id)
 
-                if unidade_id:
-                    sql += "AND m.unidade_id = %s"
+                    if diponibilidade_ordem:
+                        sql += " AND m.id NOT IN (select os.maquina_id from ordem_servico os where os.status in ('A', 'E') and os.empresa_id = %s)"
+                        params.append(empresa_id)
+
+                elif unidade_id:
+                    sql += " AND m.unidade_id = %s"
                     params.append(unidade_id)
 
                 if codigo:
@@ -58,17 +63,15 @@ class MaquinaService:
                     sql += " AND m.status = %s"
                     params.append(status)
 
-                
                 cursor.execute(sql, params, prepare=True)
                 
                 result = cursor.fetchall()
-                print(result) 
+
                 if not result:
                     return []
 
                 for row in result:
                     maquinas.append(Maquina(**row))
-
  
         return maquinas
 
