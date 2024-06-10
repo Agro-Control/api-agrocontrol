@@ -234,7 +234,7 @@ class OrdemService:
                 """
 
                 try:
-                    cursor.execute(update_query, (status, id_ordem,), prepare=True)
+                    cursor.execute(update_query, (status, status, id_ordem,), prepare=True)
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
