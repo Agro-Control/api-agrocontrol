@@ -318,10 +318,10 @@ class DashBoardsService:
                 now = datetime.datetime.now().date()
                 now = datetime.datetime.combine(now, datetime.time.min)
 
-                if grupo_id:
-                    criterio = {"grupo_id": grupo_id}
-                else:
-                    criterio = {"empresa_id": empresa_id}
+                criterio = {"grupo_id": grupo_id}
+
+                if empresa_id:
+                    criterio["empresa_id"] = empresa_id
 
                 pipeline = [
                     {
@@ -410,16 +410,15 @@ class DashBoardsService:
                 now = datetime.datetime.now().date()
                 now = datetime.datetime.combine(now, datetime.time.min)
 
-                if grupo_id:
-                    criterio = {"grupo_id": grupo_id}
-                else:
-                    criterio = {"empresa_id": empresa_id}
+                criterio = {"grupo_id": grupo_id}
+
+                if empresa_id:
+                    criterio["empresa_id"] = empresa_id
 
                 pipeline = [
                     {
                         "$match": {
                             **criterio,
-                            "grupo_id": 1,
                             "data_inicio": {"$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
                             "data_fim": {"$lte": datetime.datetime(year=now.year, month=now.month, day=now.day, hour=23,
                                                                    minute=59, second=59)},
