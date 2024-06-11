@@ -61,7 +61,6 @@ def inserir_maquinas(maquina: Maquina, token: str = Depends(verify_token(["G"]))
     return Response(status_code=201)
     
 
-
 @router.put("/maquinas")
 def atualizar_maquina(maquina: Maquina, token: str = Depends(verify_token(["G"]))):
 
@@ -79,7 +78,7 @@ def atualizar_maquina(maquina: Maquina, token: str = Depends(verify_token(["G"])
 
 
 @router.get("/maquinas/info/{maquina_id}")
-async def busca_info_maquina(maquina_id: int):
+async def busca_info_maquina(maquina_id: int, token: str = Depends(verify_token(["G"]))):
     if not maquina_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 

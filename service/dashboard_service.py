@@ -25,11 +25,11 @@ class DashBoardsService:
                 """
 
                 if grupo_id:
-                    sql_sub += " AND e.grupo_id = %s"
+                    sql_sub += " AND u.grupo_id = %s"
                     params.append(grupo_id)
 
-                elif empresa_id:
-                    sql_sub += " AND e.id = %s"
+                if empresa_id:
+                    sql_sub += " AND u.empresa_id = %s"
                     params.append(empresa_id)
 
                 if unidade_id:
@@ -45,16 +45,16 @@ class DashBoardsService:
                     LEFT JOIN ordem_servico os ON os.id = oso.ordem_servico_id
                     INNER JOIN unidade un ON u.unidade_id  = un.id 
                     INNER JOIN empresa e ON  e.id = un.empresa_id 
-                    WHERE os.status = 'E' 
+                    WHERE os.status in ('A', 'E') 
                     AND u.tipo = 'O'
                 """
 
                 if grupo_id:
-                    sql += " AND e.grupo_id = %s"
+                    sql += " AND u.grupo_id = %s"
                     params.append(grupo_id)
 
                 if empresa_id:
-                    sql += " AND e.id = %s"
+                    sql += " AND u.empresa_id = %s"
                     params.append(empresa_id)
 
                 if unidade_id:
@@ -62,7 +62,6 @@ class DashBoardsService:
                     params.append(unidade_id)
 
                 cursor.execute(sql, params, prepare=True)
-
                 result = cursor.fetchone()
 
                 if not result:
@@ -158,7 +157,6 @@ class DashBoardsService:
                         INNER JOIN unidade u ON os.unidade_id = u.id 
                         INNER JOIN empresa e ON e.id  = os.empresa_id 
                         WHERE os.status in ('A', 'E')
-
                     """
 
                 if grupo_id:
