@@ -73,13 +73,12 @@ def atualizar_maquina(maquina: Maquina, token: str = Depends(verify_token(["G"])
     response = maquina_service.altera_maquina(maquina)
     
     if not response:
-        return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})
+        return JSONResponse(status_code=404, content={"error": "Erro ao atualizar empresa."})
 
     return response
 
 
-
-@router.get("/maquinas/info")
+@router.get("/maquinas/info/{maquina_id}")
 async def busca_info_maquina(maquina_id: int):
     if not maquina_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
