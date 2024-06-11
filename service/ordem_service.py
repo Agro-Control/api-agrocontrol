@@ -129,8 +129,8 @@ class OrdemService:
             with conn.cursor() as cursor:
                 # Query de insert
                 insert_query = """
-                    INSERT INTO Ordem_Servico (data_inicio, velocidade_minima, velocidade_maxima, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
-                    VALUES (%(data_inicio)s, %(velocidade_minima)s, %(velocidade_maxima)s, %(rpm)s, %(gestor_id)s, %(empresa_id)s, %(unidade_id)s, %(talhao_id)s, %(maquina_id)s)
+                    INSERT INTO Ordem_Servico (data_inicio, data_previsao_fim, velocidade_minima, velocidade_maxima, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
+                    VALUES (%(data_inicio)s, %(data_previsao_fim)s, %(velocidade_minima)s, %(velocidade_maxima)s, %(rpm)s, %(gestor_id)s, %(empresa_id)s, %(unidade_id)s, %(talhao_id)s, %(maquina_id)s)
                     RETURNING id
                 """
                 try:
