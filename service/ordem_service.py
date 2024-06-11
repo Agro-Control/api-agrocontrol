@@ -193,7 +193,7 @@ class OrdemService:
                     DELETE FROM ordem_servico_operador oso WHERE oso.ordem_servico_id = %s;
                 """
                 try:
-                    cursor.execute(sql, ordem_update.id, prepare=True)
+                    cursor.execute(sql, (ordem_update.id,), prepare=True)
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
