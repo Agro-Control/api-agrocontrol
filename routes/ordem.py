@@ -13,14 +13,14 @@ router = APIRouter()
 async def root():
     return {"message": "Hello word 2"}
 
-@router.get("/ordem/maquina/{id_maquina}/ativa")
-def ordem_maquina_ativa(maquina_id: int, token: str = Depends(verify_token(["O"]))):
-    
-    if not maquina_id:
+@router.get("/ordem/maquina/ativa")
+def ordem_maquina_ativa(maquina: str, usuario: int, token: str = Depends(verify_token(["O"]))):
+
+    if not maquina or not usuario:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
 
     ordem_service = OrdemService()
-    response = ordem_service.busca_ordem_ativa_maquina(maquina_id)
+    response = ordem_service.busca_ordem_ativa_maquina(maquina, usuario)
     
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code=404, content={"error": "Ordem de servico não encontrada"})

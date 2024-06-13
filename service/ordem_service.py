@@ -7,7 +7,7 @@ from model.operador_model import Operador
 
 class OrdemService:
     
-    def busca_ordem_ativa_maquina(self, maquina_id: int): 
+    def busca_ordem_ativa_maquina(self, maquina: str, usuario: int):
         ordem = {}
 
         with Database() as conn: 
@@ -20,12 +20,15 @@ class OrdemService:
                             os.velocidade_maxima,
                             os.rpm 
                         from ordem_servico as os 
-                        where os.maquina_id = %s 
-                        and os.status = 'A';
+                        inner join ordem_servico_operador oso ON os.id = oso.ordem_servico_id 
+                        inner join maquina m ON os.maquina_id = m.id
+                        where m.nome = %s
+                        and os.status in ('A', 'F')
+                        and oso.operador_id = %s;
                     """
             
                 #quando model estiver pronta usar aqui
-                cursor.execute(sql, (maquina_id,), prepare=True)
+                cursor.execute(sql, (maquina, usuario,), prepare=True)
                 
                 result = cursor.fetchone()
             
