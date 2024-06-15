@@ -84,7 +84,7 @@ async def busca_info_maquina(maquina_id: int, token: str = Depends(verify_token(
 
     evento_service = EventoService()
 
-    response = evento_service.info_maquina(maquina_id)
+    response = await evento_service.info_maquina(maquina_id)
 
     return response
 
