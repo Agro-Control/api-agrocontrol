@@ -256,7 +256,7 @@ class UsuarioService:
                 operador.matricula = matricula
 
                 senha = gerar_senha_aleatoria()
-                #enviar_email(operador.email, senha)
+                enviar_email(operador.email, senha)
                 senha_criptografada = criptografar_senha(senha)
 
                 operador.senha = senha_criptografada
