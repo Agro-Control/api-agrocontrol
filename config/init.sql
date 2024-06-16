@@ -79,7 +79,8 @@ CREATE TABLE Maquina(
 CREATE TABLE Ordem_Servico(
 	id SERIAL PRIMARY KEY,
 	data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	data_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	data_inicio TIMESTAMP DEFAULT NULL,
+	data_previsao_fim TIMESTAMP  DEFAULT NULL,
 	data_fim TIMESTAMP DEFAULT NULL,
 	status CHAR DEFAULT 'A',  --COMMENT 'TABELA STATUS: A = ATIVO, E = EXECUTANDO, F = FINALIZADO, C = CANCELADO',
 	velocidade_minima double precision,
@@ -153,9 +154,9 @@ VALUES ('Unidade 1', '81170230', 'PR', 'Curitiba', 'Cidade Industrial', 'Cyro Co
 
 -- Inserir dois operadores
 INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, senha)
-VALUES ('01590575075', '202400001', 'Operador 1-SML', 'M', 1, 1, 1, 1, 'O', '999999'),
-       ('01590575076', '202400002', 'Operador 2-SML', 'T', 1, 1, 1, 2, 'O', '999989'),
-       ('73941491024', '202400003', 'Operador 3-SML', 'N', 1, 1, 1, 1, 'O', '999987');
+VALUES ('01590575075', '202400001', 'Operador 1-SML', 'M', 1, 1, 1, 1, 'O', '$2b$12$WFapcsRLl1nLVa7xqbjoBuM1qTQTixqHyoof7EyGcWVEAHDVR3WOK'),
+       ('01590575076', '202400002', 'Operador 2-SML', 'T', 1, 1, 1, 2, 'O', '$2b$12$8J3mPQ.Bqk6ZBQTc13awLuLkvNoDuTtDon1gY5tJ4WvIi/z0H4656'),
+       ('73941491024', '202400003', 'Operador 3-SML', 'N', 1, 1, 1, 1, 'O', '$2b$12$V/xVGP.Eo5ekB3YC5Si7Me3QBS6pxIl8eG0TZC1fckEcUJFzmby7q');
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, unidade_id)
@@ -167,8 +168,8 @@ INSERT INTO Talhao (codigo, tamanho, status, unidade_id)
 VALUES ('1234', '10', 'A', 1);
 
 -- Inserir uma ordem de serviço
-INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
-VALUES (10.5, 20.5, 1000.0, 2, 1, 1, 1, 1);
+INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, data_inicio, data_previsao_fim, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
+VALUES (10.5, 20.5, NOW(), NOW() + INTERVAL '1 days',  1000.0, 2, 1, 1, 1, 1);
 
 -- Inserir um talhão
 INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id) 
