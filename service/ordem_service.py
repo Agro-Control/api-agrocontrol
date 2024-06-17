@@ -23,7 +23,7 @@ class OrdemService:
                         inner join ordem_servico_operador oso ON os.id = oso.ordem_servico_id 
                         inner join maquina m ON os.maquina_id = m.id
                         where m.nome = %s
-                        and os.status in ('A', 'F')
+                        and os.status in ('A', 'E')
                         and oso.operador_id = %s;
                     """
             
