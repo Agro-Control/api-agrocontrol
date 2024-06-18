@@ -73,7 +73,7 @@ def login(login: Login):
 
 # rota para revalidar usuario logado, deve morrer dps
 @app.get("/usersession/{id}")
-def user_logado(id: int, token: str = Depends(verify_token(["D", "G"]))):
+def user_logado(id: int, token: str = Depends(verify_token(["D", "G", "O"]))):
 
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
