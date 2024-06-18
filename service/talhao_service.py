@@ -27,7 +27,7 @@ class TalhaoService:
  
         return talhao
 
-    def buscar_talhoes(self, unidade_id:int | None = None, codigo: str | None = None, status: str | None = None):
+    def buscar_talhoes(self, empresa_id: int | None = None, unidade_id:int | None = None, codigo: str | None = None, status: str | None = None):
 
         talhoes = []
 
@@ -42,7 +42,9 @@ class TalhaoService:
                         FROM Talhao t
                         WHERE 1=1
                     """
-
+                if empresa_id:
+                    sql += " AND t.unidade_id in (select u.id from unidade u where u.empresa_id = %s and u.status = 'A')"
+                    params.append(empresa_id)
                 if unidade_id:
                     sql += "AND t.unidade_id = %s"
                     params.append(unidade_id)
