@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
-
+from datetime import datetime
+from service.evento_service import EventoService
 from service.jwt_service import verify_token
 from service.talhao_service import TalhaoService
 from model.talhao_model import Talhao
@@ -67,5 +68,56 @@ def atualizar_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar talhao."})
+
+    return response
+
+@router.get("/talhao/info_clima")
+async def talhao_info_clima(talhao_id: int = Query(None, description="Talhao consulta para clima"),
+                       data_inicio: datetime = Query(None, description="Data inicio de eventos de clima"),
+                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima")):
+
+    if not talhao_id and not data_inicio and not data_fim:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
+    evento_service = EventoService()
+
+    response = await evento_service.eventos_clima_por_dia(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim)
+
+    if not response:
+        return JSONResponse(status_code=403, content={"error": "Sem operacional"})
+
+    return response
+
+@router.get("/talhao/info_clima_detalhado")
+async def talhao_info_clima_detalhado(talhao_id: int = Query(None, description="Identificador do talhao para consultar os eventos de clima"),
+                       data_inicio: datetime = Query(None, description="Data inicio de eventos de clima"),
+                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima")):
+
+    if not talhao_id and not data_inicio and not data_fim:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
+    evento_service = EventoService()
+
+    response = await evento_service.eventos_clima_por_dia_detalhado(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim)
+
+    if not response:
+        return JSONResponse(status_code=403, content={"error": "Sem operacional"})
+
+    return response
+
+@router.get("/talhao/info_clima_anual_detalhado")
+async def talhao_info_clima_detalhado(talhao_id: int = Query(None, description="Identificador do talhao para consultar os eventos de clima"),
+                       data_inicio: datetime = Query(None, description="Data inicio de eventos de clima"),
+                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima")):
+
+    if not talhao_id and not data_inicio and not data_fim:
+        return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
+
+    evento_service = EventoService()
+
+    response = await evento_service.eventos_clima_por_mes_ano_detalhado(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim)
+
+    if not response:
+        return JSONResponse(status_code=403, content={"error": "Sem operacional"})
 
     return response

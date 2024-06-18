@@ -51,6 +51,10 @@ class Maquina:
     def __init__(self, id):
         self.id_ = id
 
+class Talhao:
+    def __init__(self, id):
+        self.id_ = id
+
 
 class Ordem:
     def __init__(self, id, maquina, operador_ativo, status):
@@ -107,6 +111,7 @@ class EventSimulator(threading.Thread):
               f"OPERADOR: {self.ordem.operador.id_}, "
               f"TURNO: {self.ordem.operador.turno}, "
               f"MAQUINA: {self.ordem.maquina.id_}, "
+              f"TALHAO: {self.ordem.talhao}, "
               f"EMPRESA: {self.ordem.operador.empresa_id}, "
               f"GRUPO: {self.ordem.operador.grupo_id}", flush=True)
 
@@ -198,6 +203,7 @@ class EventSimulator(threading.Thread):
                 "maquina_id": self.ordem.maquina.id_,
                 "empresa_id": self.ordem.operador.empresa_id,
                 "grupo_id": self.ordem.operador.grupo_id,
+                "talhao_id": self.ordem.talhao.id,
                 "nome": event.name,
                 "data_inicio": event.data_inicio.isoformat(),
                 "data_fim": event.data_fim.isoformat() if event.data_fim else None
@@ -258,6 +264,7 @@ class Deamon:
                              SELECT
                                 os.id as id,
                                 os.maquina_id as maquina_id,
+                                os.talhao_id as talhao_id,
                                 oso.operador_id as operador_id,
                                 os.status status,
                                 u.turno as turno,
@@ -279,7 +286,8 @@ class Deamon:
                             if row['id'] not in self.ordens_ativas.copy():
                                 operador = Operador(row['operador_id'],row['empresa_id'], row['grupo_id'], row['turno'])
                                 maquina = Maquina(row['maquina_id'])
-                                ordem = Ordem(row['id'], maquina, operador, row['status'])
+                                talhao = Talhao(row['talhao_id'])
+                                ordem = Ordem(row['id'], maquina, talhao, operador, row['status'])
 
                                 simulador_eventos = EventSimulator(ordem)
                                 simulador_eventos.start()

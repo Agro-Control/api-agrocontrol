@@ -1,16 +1,19 @@
-import datetime
+
 
 from connection.mongo import Mongo
 from model.evento_model import Evento
 from errors import EventError
 from bson import ObjectId
 from datetime import timezone
+from datetime import datetime
+import logging
 
+logger = logging.getLogger(__name__)
 
 class EventoService:
     def __init__(self):
         pass
-
+ 
     async def busca_eventos_ordem(self, id_ordem: int, nome: str = None):
 
         eventos = []
@@ -29,6 +32,7 @@ class EventoService:
                 evento.duracao = documento.get('duracao', None)
                 evento.ordem_servico_id = documento.get('ordem_servico_id', None)
                 evento.maquina_id = documento.get('maquina_id', None)
+                evento.talhao_id = documento.get('talhao_id', None)
                 evento.operador_id = documento.get('operador_id', None)
                 evento.empresa_id = documento.get('empresa_id', None)
                 evento.grupo_id = documento.get('grupo_id', None)
@@ -170,3 +174,180 @@ class EventoService:
                 raise EventError(ex)
 
         return info_maquina
+    
+    async def eventos_clima_por_dia(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
+        info_clima = {}
+        logger.info(f'Iniciando processamento para talhão {talhao_id} de {data_inicio} até {data_fim}')
+        async with Mongo() as client:
+            try:
+                pipeline = [
+                    {
+                        "$match": {
+                            "talhao_id": talhao_id,
+                            "nome": "clima",
+                            "data_inicio": {
+                                "$gte": data_inicio,
+                                "$lt": data_fim
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": {
+                                "dia": {
+                                    "$dateToString": {
+                                        "format": "%Y-%m-%d",
+                                        "date": "$data_inicio"
+                                    }
+                                }
+                            },
+                            "count": {"$sum": 1}
+                        }
+                    },
+                    {
+                        "$sort": {"_id.dia": 1}
+                    }
+                ]
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    dia = result['_id']['dia']
+                    info_clima[dia] = result['count']
+                    logger.debug(f'Dia {dia}: {result["count"]} eventos climáticos')
+            except Exception as ex:
+             logger.error(f'Erro ao processar eventos climáticos: {ex}', exc_info=True)
+             raise EventError(ex)
+            
+        logger.info('Processamento concluído com sucesso')
+        return info_clima
+    
+    async def eventos_clima_por_dia_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
+        info_clima = {
+            "id": f"{data_inicio.date()}",
+            "data": []
+        }
+        logger.info(f'Iniciando processamento detalhado para talhão {talhao_id} de {data_inicio} até {data_fim}')
+        
+        async with Mongo() as client:
+            try:
+                pipeline = [
+                    {
+                        "$match": {
+                            "talhao_id": talhao_id,
+                            "nome": "clima",
+                            "data_inicio": {
+                                "$gte": data_inicio,
+                                "$lt": data_fim
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": {
+                                "dia": {
+                                    "$dateToString": {
+                                        "format": "%Y-%m-%d",
+                                        "date": "$data_inicio"
+                                    }
+                                }
+                            },
+                            "duracao_total": {"$sum": "$duracao"}
+                        }
+                    },
+                    {
+                        "$sort": {"_id.dia": 1}
+                    }
+                ]
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    dia = result['_id']['dia']
+                    info_clima["data"].append({
+                        "data_evento": dia,
+                        "duracao": result['duracao_total']
+                    })
+                    logger.debug(f'Dia {dia}: duração total {result["duracao_total"]} minutos')
+
+            except Exception as ex:
+                logger.error(f'Erro ao processar eventos climáticos detalhados: {ex}', exc_info=True)
+                raise EventError(ex)
+        
+        logger.info('Processamento detalhado concluído com sucesso')
+        return info_clima
+    
+    async def eventos_clima_por_mes_ano_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
+        info_clima = []
+
+        logger.info(f'Iniciando processamento detalhado para talhão {talhao_id} de {data_inicio} até {data_fim}')
+
+        async with Mongo() as client:
+            try:
+                # Função para obter eventos climáticos por ano e agrupá-los por mês
+                async def obter_eventos_por_mes_ano(ano_inicio):
+                    ano_fim = ano_inicio + 1
+
+                    pipeline = [
+                        {
+                            "$match": {
+                                "talhao_id": talhao_id,
+                                "nome": "clima",
+                                "data_inicio": {
+                                    "$gte": datetime(ano_inicio, 1, 1),
+                                    "$lt": datetime(ano_fim, 1, 1)
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": {
+                                    "ano_mes": {
+                                        "$dateToString": {
+                                            "format": "%Y-%m",
+                                            "date": "$data_inicio"
+                                        }
+                                    }
+                                },
+                                "duracao_total": {"$sum": "$duracao"}
+                            }
+                        },
+                        {
+                            "$sort": {"_id.ano_mes": 1}
+                        }
+                    ]
+
+                    eventos_mes_ano = []
+
+                    async for result in client.agro_control.eventos.aggregate(pipeline):
+                        ano_mes = result['_id']['ano_mes']
+                        eventos_mes_ano.append({
+                            "data_evento": ano_mes,
+                            "duracao": result['duracao_total']
+                        })
+                        logger.debug(f'Mês {ano_mes}: duração total {result["duracao_total"]} minutos')
+
+                    return eventos_mes_ano
+
+                # Obter eventos climáticos para o período especificado
+                eventos_periodo = await obter_eventos_por_mes_ano(data_inicio.year)
+
+                if eventos_periodo:
+                    info_clima.append({
+                        "id": data_inicio.year,
+                        "data": eventos_periodo
+                    })
+
+                # Obter eventos climáticos para os últimos 2 anos
+                for anos_antes in range(1, 3):
+                    ano_anterior = data_inicio.year - anos_antes
+                    eventos_anos_antes = await obter_eventos_por_mes_ano(ano_anterior)
+
+                    if eventos_anos_antes:
+                        info_clima.append({
+                            "id": ano_anterior,
+                            "data": eventos_anos_antes
+                        })
+
+            except Exception as ex:
+                logger.error(f'Erro ao processar eventos climáticos detalhados: {ex}', exc_info=True)
+                raise EventError(ex)
+
+        logger.info('Processamento detalhado concluído com sucesso')
+        return info_clima
