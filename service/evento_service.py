@@ -20,7 +20,7 @@ class EventoService:
             if nome:
                 query['nome'] = str(nome)
 
-            async for documento in client.agro_control.eventos.find(query):
+            async for documento in client.agro_control.eventos.find(query).sort("data_inicio", -1):
                 evento = Evento()
                 evento.id = str(documento['_id'])
                 evento.nome = documento.get('nome', None)

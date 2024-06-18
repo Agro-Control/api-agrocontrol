@@ -14,7 +14,7 @@ async def root():
     return {"message": "Hello word 2"}
 
 @router.get("/ordem/maquina/ativa")
-def ordem_maquina_ativa(maquina: str, usuario: int, token: str = Depends(verify_token(["O"]))):
+def ordem_maquina_ativa(maquina: str, usuario: int, ):
 
     if not maquina or not usuario:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})

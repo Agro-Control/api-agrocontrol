@@ -27,18 +27,18 @@ def busca_talhao(talhao_id:int, token: str = Depends(verify_token(["G"]))):
 
 
 @router.get("/talhoes")
-def busca_talhoes(unidade_id:int = Query(None, description="Empresa do talhao"),  
-                 status: str = Query(None, description="Status do Talhão"),
-                codigo: str = Query(None, description= "Nome/Codigo do Talhão"),
-                token: str = Depends(verify_token(["G"]))):
-
+def busca_talhoes(empresa_id: int = Query(None, description="Empresa do talhao"),
+                  unidade_id: int = Query(None, description="Unidade do talhao"),
+                  status: str = Query(None, description="Status do Talhão"),
+                  codigo: str = Query(None, description="Nome/Codigo do Talhão"),
+                  token: str = Depends(verify_token(["G"]))):
 
     talhao_service = TalhaoService()
 
-    response = talhao_service.buscar_talhoes(unidade_id=unidade_id, codigo=codigo, status=status)
+    response = talhao_service.buscar_talhoes(empresa_id=empresa_id, unidade_id=unidade_id, codigo=codigo, status=status)
     
     if not response:
-        return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})
+        return JSONResponse(status_code=404, content={"error": "Erro ao atualizar empresa."})
 
     return {"talhoes": response}
 
