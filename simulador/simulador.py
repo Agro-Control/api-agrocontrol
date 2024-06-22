@@ -215,7 +215,7 @@ class Simulator(threading.Thread):
             elif event.name in ["fim_ordem", "troca_turno"]:
                 data['duracao'] = event.duracao
 
-            response = requests.request(metodo, 'http://api:5000/eventos', data=json.dumps(data))
+            response = requests.request(metodo, 'http://api/eventos', data=json.dumps(data))
 
             if response:
                 response = response.json()
@@ -278,7 +278,9 @@ class Main:
                         cursor.execute(sql)
                         result = cursor.fetchall()
 
+                        ordens = []
                         for row in result:
+                            ordens.append(row['id'])
                             if row['id'] not in self.ordens_ativas.copy():
                                 operador = Operador(row['operador_id'], row['empresa_id'], row['grupo_id'], row['turno'])
                                 maquina = Maquina(row['maquina_id'])
@@ -287,8 +289,15 @@ class Main:
                                 simulador_eventos = Simulator(ordem)
                                 simulador_eventos.start()
                                 self.ordens_ativas[row['id']] = simulador_eventos
+
+                        for _id, simulador in self.ordens_ativas.copy().items():
+                            if _id not in ordens:
+                                print(f"Removendo Ordem {_id} do simulador", flush=True)
+                                simulador.runnig = False
+                                del self.ordens_ativas[_id]
+
             except:
-                print("Deu ruim", flush=True)
+                print("Erro consulta ordem simulador", flush=True)
 
             for _id, ordem in self.ordens_ativas.copy().items():
                 if not ordem.is_alive():

@@ -28,7 +28,7 @@ def busca_empresa(empresa_id: int, token: str = Depends(verify_token(["D", "G"])
 
 @router.get("/empresas")
 def busca_empresas(status: str = Query(None, description="Status da Empresa"),
-                   codigo: str = Query(None, description="Nome/Codigo da Empresa"),
+                   codigo: str = Query(None, description="Nome da Empresa"),
                    estado: str = Query(None, description="Nome do Estado da Empresa"),
                    grupo_id: int = Query(None, description="Grupo da Empresa"),
                     disp_gestor:bool = Query(None, description="Empresas sem gestor"),
@@ -74,8 +74,8 @@ def atualiza_empresa(empresa: Empresa, token: str = Depends(verify_token(["D", "
 
 @router.get("/estados_empresa")
 def busca_estados_empresas(
-            grupo_id: int = Query(None, description="id do grupo empresarial"),
-            empresa_id: int = Query(None, description="id da empresa"),
+            grupo_id: int = Query(None, description="Grupo"),
+            empresa_id: int = Query(None, description="Empresa"),
             token: str = Depends(verify_token(["D", "G"]))
         ):
 

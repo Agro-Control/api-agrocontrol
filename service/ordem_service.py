@@ -175,6 +175,10 @@ class OrdemService:
                     UPDATE Ordem_Servico
                     SET 
                         status = %(status)s,
+                        data_fim = CASE
+                            WHEN %(status)s = 'F' THEN NOW()
+                            ELSE NULL
+                        END
                         velocidade_minima = %(velocidade_minima)s,
                         velocidade_maxima = %(velocidade_maxima)s,
                         rpm = %(rpm)s

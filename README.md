@@ -1,37 +1,36 @@
 # api-agrocontrol
 
-bla bla bla api for project agro control.
+api para o projeto agro control.
 
-Obs: This project was built for using with docker, if you not want to use it you will need to change the connections parameters.
+Obs: Este projeto foi construído para ser usado com Docker. Se você não quiser usar Docker, será necessário alterar os parâmetros de conexão.
 
-## Requirements
+## Requisitos
 [Python](https://www.python.org/) version 3.8+  
 [PIP](https://pip.pypa.io/en/stable/installation/)    
 [Docker](https://www.docker.com/) (optional)  
 [Postgres](https://www.postgresql.org/) version 15.6+ (optional)  
 [Mongo](https://www.mongodb.com/pt-br) version 6.0+ (optional)  
 
-## Getting Started
-First, make sure you have all the requirements installed, otherwise you may encounter some problems.
-Now setup and install all the libraries required for this project
-1. Clone this repo 
-2. Create a virtual environment for this project directory```python -m venv venv``` (optional)
-3. Activete a virtual environment (optional)
-3.1 On Linux/Mac ```source venv/bin/activate```
-3.2 On Windows ```venv\Scripts\activate```
-4. Run ```pip install -r requirements.txt```
+## Começando
+Primeiro, certifique-se de ter todos os requisitos instalados, caso contrário, você pode encontrar alguns problemas. 
+Agora configure e instale todas as bibliotecas necessárias para este projeto.
+1. Clone este repositório 
+2. Crie um ambiente virtual para o diretório deste projeto:```python -m venv venv``` (opcional)
+3. Ative o ambiente virtual (opcional)
+3.1 No Linux/Mac ```source venv/bin/activate```
+3.2 No Windows ```venv\Scripts\activate```
+4. Execute  ```pip install -r requirements.txt```
 
-Or if you have docker installed just run ```docker compose -f docker-compose.yml up```, and no setup is required
+Ou, se você tiver o Docker instalado, basta executar ```docker compose -f docker-compose.yml up```, e nenhuma configuração será necessária.
 
-Obs: There is a database start files for this project in /config, you can use it to start up the databases
+Obs: Existem arquivos de inicialização de banco de dados para este projeto em /config, você pode usá-los para iniciar os bancos de dados
 
-## Run this project
-To run this project locally, do in your terminal ```uvicorn app:app --host 0.0.0.0 --port 5000```
-For development mode add ```--reload```
+## Executando este projeto
+Para executar este projeto localmente, faça no seu terminal: ```uvicorn app:app --host 0.0.0.0 --port 5000```
+Para o modo de desenvolvimento, adicione ```--reload```
 
-Obs: uvicorn is supported only on Linux/Mac distro, to run on Windows please use docker.
+Obs: uvicorn é suportado apenas em distribuições Linux/Mac. Para executar no Windows, por favor use Docker.
 
 ## Documentation
 
-This api have two documentation, located in ```/docs``` or ```/redoc``` endpoints
-
+Esta API possui duas documentações, localizadas nos endpoints ```/docs``` ou ```/redoc```

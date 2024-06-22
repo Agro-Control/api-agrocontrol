@@ -11,8 +11,8 @@ router = APIRouter()
 
 
 @router.get("/dashboards/operadores_operando")
-def operadores_alocados(grupo_id: int = Query(None, description="Pato"),
-                        empresa_id: int = Query(None, description="Deus no comando"),
+def operadores_alocados(grupo_id: int = Query(None, description="Grupo"),
+                        empresa_id: int = Query(None, description="Empresa"),
                         unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
@@ -28,8 +28,8 @@ def operadores_alocados(grupo_id: int = Query(None, description="Pato"),
 
 @router.get("/dashboards/maquinas_operando")
 def maquinas_alocados(
-            grupo_id: int = Query(None, description="Deus no comando"),
-            empresa_id: int = Query(None, description="Deus no comando"),
+            grupo_id: int = Query(None, description="Grupo"),
+            empresa_id: int = Query(None, description="Empresa"),
             unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
@@ -46,8 +46,8 @@ def maquinas_alocados(
 
 @router.get("/dashboards/ordem_ativas")
 def ordem_ativas(
-            grupo_id: int = Query(None, description="Deus no comando"),
-            empresa_id: int = Query(None, description="Deus no comando"),
+            grupo_id: int = Query(None, description="Grupo"),
+            empresa_id: int = Query(None, description="Empresa"),
             unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
@@ -63,8 +63,8 @@ def ordem_ativas(
 
 @router.get("/dashboards/ordem_status")
 def ordem_status(
-            grupo_id: int = Query(None, description="Deus no comando"),
-            empresa_id: int = Query(None, description="Deus no comando"),
+            grupo_id: int = Query(None, description="Grupo"),
+            empresa_id: int = Query(None, description="Empresa"),
             unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
@@ -95,7 +95,7 @@ async def ordem_eventos(ordem_id: int = Query(None, description="Ordem da Empres
 
 
 @router.get("/dashboards/maquinas_manutencao")
-async def ordem_status(grupo_id: int = Query(None, description="Empresa consulta de maquinas e manutencao"),
+async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta de maquinas e manutencao"),
                        empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao")):
 
     if not empresa_id and not grupo_id:
@@ -112,7 +112,7 @@ async def ordem_status(grupo_id: int = Query(None, description="Empresa consulta
 
 
 @router.get("/dashboards/tempo_operacional")
-async def ordem_status(grupo_id: int = Query(None, description="Empresa consulta de maquinas e manutencao"),
+async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta de maquinas e manutencao"),
                        empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao")):
 
     if not empresa_id and not grupo_id:
