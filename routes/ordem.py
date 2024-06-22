@@ -19,13 +19,14 @@ def ordem_maquina_ativa(maquina: str, usuario: int, ):
     if not maquina or not usuario:
         return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
 
+
     ordem_service = OrdemService()
     response = ordem_service.busca_ordem_ativa_maquina(maquina, usuario)
     
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code=404, content={"error": "Ordem de servico não encontrada"})
     
-    return JSONResponse(status_code=200, content=response.dict())
+    return response
 
 @router.get("/ordens/{id_ordem}")
 def busca_ordem(id_ordem:int, token: str = Depends(verify_token(["A", "G"]))):

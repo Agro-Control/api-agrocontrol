@@ -13,12 +13,7 @@ class OrdemService:
         with Database() as conn: 
             with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
                 sql = f"""select 
-                            os.id,
-                            os.data_inicio,
-                            os.status,
-                            os.velocidade_minima,
-                            os.velocidade_maxima,
-                            os.rpm 
+                            os.*
                         from ordem_servico as os 
                         inner join ordem_servico_operador oso ON os.id = oso.ordem_servico_id 
                         inner join maquina m ON os.maquina_id = m.id
@@ -26,8 +21,7 @@ class OrdemService:
                         and os.status in ('A', 'E')
                         and oso.operador_id = %s;
                     """
-            
-                #quando model estiver pronta usar aqui
+
                 cursor.execute(sql, (maquina, usuario,), prepare=True)
                 
                 result = cursor.fetchone()
