@@ -234,6 +234,7 @@ class DashBoardsService:
                             WHEN os.status = 'E' THEN 'Em andamento'
                             WHEN os.status = 'F' THEN 'Finalizado'
                             WHEN os.status = 'C' THEN 'Cancelado'
+                            WHEN os.status = 'I' THEN 'Inativo'
                         ELSE
                             'Fez merda'
                         END as "STATUS",

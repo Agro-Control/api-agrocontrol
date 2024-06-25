@@ -73,6 +73,7 @@ def inserir_ordem(ordem: OrdemServico, token: str = Depends(verify_token(["G"]))
 
 @router.put("/ordens")
 def atualizar_ordem(ordem: OrdemServico, token: str = Depends(verify_token(["G"]))):
+
     if not ordem or not ordem.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
     

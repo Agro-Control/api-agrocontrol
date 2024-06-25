@@ -127,9 +127,9 @@ class UsuarioService:
                 if not self.verifica_cpf_existente(cursor, gestor_update.id, gestor_update.cpf):
                     return 409, "CPF já existente"
 
-                # Query de update
-                # senha = gestor_update.senha
-                # gestor_update.senha = criptografar_senha(senha)
+                if gestor_update.status == 'I':
+                    self.mascara_campos(gestor_update)
+
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -294,6 +294,10 @@ class UsuarioService:
                 # Query de update
                 # senha = operador_update.senha
                 # operador_update.senha = criptografar_senha(senha)
+
+                if operador_update.status == 'I':
+                    self.mascara_campos(operador_update)
+
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -389,6 +393,14 @@ class UsuarioService:
                 return False
         return True
 
+
+    def mascara_campos(self, usuario):
+        usuario.cpf = '***'
+        usuario.telefone = '***'
+        usuario.email = '***'
+        usuario.matricula = '***'
+        usuario.senha = None
+        usuario.data_contratacao = None
 
     @staticmethod
     def valida_cpf(cpf):

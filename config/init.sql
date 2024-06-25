@@ -169,7 +169,7 @@ VALUES ('1234', '10', 'A', 1);
 
 -- Inserir uma ordem de serviço
 INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, data_inicio, data_previsao_fim, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
-VALUES (10.5, 20.5, NOW(), NOW() + INTERVAL '1 days',  1000.0, 2, 1, 1, 1, 1);
+VALUES (10.5, 20.5, NOW(), NOW() + INTERVAL '10 minutes',  1000.0, 2, 1, 1, 1, 1);
 
 -- Inserir um talhão
 INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id) 

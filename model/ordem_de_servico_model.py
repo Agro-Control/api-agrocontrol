@@ -8,7 +8,7 @@ class OrdemServico(BaseModel):
     data_inicio: datetime | None = None
     data_previsao_fim: datetime | None = None
     data_fim: datetime | None = None
-    status: str | None = None
+    status: str |None = None
     velocidade_minima: float | None = None
     velocidade_maxima: float | None = None
     rpm: int | None = None

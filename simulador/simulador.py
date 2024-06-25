@@ -122,8 +122,10 @@ class Simulator(threading.Thread):
 
             # gerar novo evento
             current_event = self.gera_novo_evento(old_event)
+
             current_event.set_nova_duracao()
             current_event.set_data_inicio(data_inicio=datetime.datetime.now())
+            current_event.set_data_fim(None)
 
             if current_event.name in ["fim_ordem", "troca_turno"]:
                 current_event.set_data_fim(data_fim=datetime.datetime.now())
@@ -151,6 +153,7 @@ class Simulator(threading.Thread):
                 self.envia_evento(old_event, "PUT")
 
             old_event = current_event
+
             time.sleep(current_event.duracao)
 
         print(f"Ordem [{self.ordem.id_}] simulador encerrado!", flush=True)

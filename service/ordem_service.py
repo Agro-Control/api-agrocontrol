@@ -131,6 +131,7 @@ class OrdemService:
                     RETURNING id
                 """
                 try:
+                    print(insert_query, flush=True)
                     cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
                     id_ultimo_registro = cursor.fetchone()[0]
 
@@ -163,24 +164,36 @@ class OrdemService:
         ordem = {}
         
         with Database() as conn: 
-            with conn.cursor() as cursor: 
+            with conn.cursor() as cursor:
+
+                params = None
+                if ordem_update.status == 'F':
+                    update_query = """
+                                        UPDATE Ordem_Servico
+                                        SET 
+                                            status = %s,
+                                            data_fim = CASE
+                                                WHEN %s = 'F' THEN NOW()
+                                                ELSE NULL
+                                            END
+                                        WHERE id = %s;
+                                    """
+                    params = [ordem_update.status, ordem_update.status, ordem_update.id]
                 # Query de update
-                update_query = """
-                    UPDATE Ordem_Servico
-                    SET 
-                        status = %(status)s,
-                        data_fim = CASE
-                            WHEN %(status)s = 'F' THEN NOW()
-                            ELSE NULL
-                        END
-                        velocidade_minima = %(velocidade_minima)s,
-                        velocidade_maxima = %(velocidade_maxima)s,
-                        rpm = %(rpm)s
-                    WHERE id = %(id)s;
-                """
+                else:
+                    update_query = """
+                                UPDATE Ordem_Servico
+                                SET 
+                                    status = %(status)s,
+                                    velocidade_minima = %(velocidade_minima)s,
+                                    velocidade_maxima = %(velocidade_maxima)s,
+                                    rpm = %(rpm)s
+                                WHERE id = %(id)s;
+                            """
+                    params = ordem_update.dict()
 
                 try:
-                    cursor.execute(update_query, ordem_update.dict(), prepare=True)
+                    cursor.execute(update_query, params, prepare=True)
                 except Exception as e:
                     conn.rollback()
                     raise DatabaseError(e)
