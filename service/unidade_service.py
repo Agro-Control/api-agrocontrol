@@ -1,53 +1,51 @@
-from connection.postgres import Database
+from connection.postgres import AsyncDatabase
 from errors import DatabaseError
-from model.unidade_model import Unidade 
+from model.unidade_model import Unidade
+
 
 class UnidadeService:
-    
-    def buscar_unidade(self, unidade_id: int):
-        unidade = {}
-        
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-                sql = f"""
+
+    async def buscar_unidade(self, unidade_id: int):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+                sql = """
                         SELECT 
                             *
                         FROM Unidade u 
                         WHERE u.id = %s ;
                     """
-                
-                cursor.execute(sql, (unidade_id, ), prepare=True)
-                
-                result = cursor.fetchone()
-            
+
+                await cursor.execute(sql, (unidade_id,), prepare=True)
+
+                result = await cursor.fetchone()
+
                 if not result:
                     return {}
 
                 unidade = Unidade(**result)
- 
+
         return unidade
 
-
-    def buscar_unidades(self, empresa_id:int | None = None, grupo_id: int | None = None, codigo: str | None = None, status: str | None = None):
+    async def buscar_unidades(self, empresa_id: int | None = None, grupo_id: int | None = None,
+                              codigo: str | None = None, status: str | None = None):
         unidades = []
-        
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-    
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+
                 params = []
 
-                sql = f"""SELECT 
+                sql = """SELECT 
                             *
                         FROM Unidade u
                         WHERE 1=1
                     """
-                
+
                 if empresa_id:
                     sql += " AND u.empresa_id = %s"
                     params.append(empresa_id)
 
                 if grupo_id:
-
                     sql += " AND u.empresa_id in (select e.id from empresa e where e.grupo_id = %s)"
                     params.append(grupo_id)
 
@@ -58,23 +56,22 @@ class UnidadeService:
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
-    
-                cursor.execute(sql, params, prepare=True)
-                
-                result = cursor.fetchall()
+
+                await cursor.execute(sql, params, prepare=True)
+
+                result = await cursor.fetchall()
 
                 if not result:
                     return []
-                
+
                 for row in result:
                     unidades.append(Unidade(**row))
 
         return unidades
 
-
-    def inserir_unidade(self, unidade: Unidade):
-        with Database() as conn: 
-            with conn.cursor() as cursor:
+    async def inserir_unidade(self, unidade: Unidade):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
 
                 # Query de insert
                 insert_query = """
@@ -86,22 +83,21 @@ class UnidadeService:
                     %(numero)s, %(complemento)s, %(gestor_id)s, %(empresa_id)s)
                 """
                 try:
-                    cursor.execute(insert_query, unidade.dict(), prepare=True)
+                    await cursor.execute(insert_query, unidade.dict(), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
+                    await conn.commit()
 
-                    
-        return 
+        return
 
-    def altera_unidade(self, unidade_update: Unidade):
+    async def altera_unidade(self, unidade_update: Unidade):
         unidade = {}
-        
-        with Database() as conn: 
-            with conn.cursor() as cursor: 
-        # Query de update
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
+                # Query de update
                 update_query = """
                     UPDATE Unidade
                     SET
@@ -116,18 +112,18 @@ class UnidadeService:
                         status = %(status)s
                     WHERE id = %(id)s
                 """
-                
+
                 try:
-                    cursor.execute(update_query, unidade_update.dict(), prepare=True)
+                    await cursor.execute(update_query, unidade_update.dict(), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
-                
-                unidade = self.buscar_unidade(unidade_update.id)
+                    await conn.commit()
+
+                unidade = await self.buscar_unidade(unidade_update.id)
 
                 if not unidade:
                     return {}
-    
+
         return unidade

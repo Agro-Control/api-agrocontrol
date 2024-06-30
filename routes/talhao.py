@@ -11,15 +11,15 @@ router = APIRouter()
 
 
 @router.get("/talhoes/{talhao_id}")
-def busca_talhao(talhao_id:int, token: str = Depends(verify_token(["G"]))):
+async def busca_talhao(talhao_id:int, token: str = Depends(verify_token(["G"]))):
 
     if not talhao_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     talhao_service = TalhaoService()
 
-    response = talhao_service.buscar_talhao(talhao_id)
-    
+    response = await talhao_service.buscar_talhao(talhao_id)
+
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar empresa."})
 
@@ -27,7 +27,7 @@ def busca_talhao(talhao_id:int, token: str = Depends(verify_token(["G"]))):
 
 
 @router.get("/talhoes")
-def busca_talhoes(empresa_id: int = Query(None, description="Empresa do talhao"),
+async def busca_talhoes(empresa_id: int = Query(None, description="Empresa do talhao"),
                   unidade_id: int = Query(None, description="Unidade do talhao"),
                   status: str = Query(None, description="Status do Talhão"),
                   codigo: str = Query(None, description="Nome/Codigo do Talhão"),
@@ -35,8 +35,8 @@ def busca_talhoes(empresa_id: int = Query(None, description="Empresa do talhao")
 
     talhao_service = TalhaoService()
 
-    response = talhao_service.buscar_talhoes(empresa_id=empresa_id, unidade_id=unidade_id, codigo=codigo, status=status)
-    
+    response = await talhao_service.buscar_talhoes(empresa_id=empresa_id, unidade_id=unidade_id, codigo=codigo, status=status)
+
     if not response:
         return JSONResponse(status_code=404, content={"error": "Erro ao atualizar empresa."})
 
@@ -44,26 +44,26 @@ def busca_talhoes(empresa_id: int = Query(None, description="Empresa do talhao")
 
 
 @router.post("/talhoes")
-def inserir_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
+async def inserir_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
     if not talhao:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
-    
+
     talhao_service = TalhaoService()
-    
-    talhao_service.inserir_talhao(talhao)
+
+    await talhao_service.inserir_talhao(talhao)
 
     return Response(status_code=201)
 
 
 @router.put("/talhoes")
-def atualizar_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
+async def atualizar_talhao(talhao: Talhao, token: str = Depends(verify_token(["G"]))):
 
     if not talhao or not talhao.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
-    
+
     talhao_service = TalhaoService()
 
-    response = talhao_service.altera_talhao(talhao)
+    response = await talhao_service.altera_talhao(talhao)
 
     if not response:
         return JSONResponse(status_code= 404, content={"error": "Erro ao atualizar talhao."})

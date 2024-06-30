@@ -1,70 +1,51 @@
-from connection.postgres import Database, AsyncDatabase
+from connection.postgres import AsyncDatabase
 from connection.mongo import Mongo
 from errors import EventError
 from errors import DatabaseError
 from model.ordem_de_servico_model import OrdemServico
 from model.operador_model import Operador
 
+
 class OrdemService:
-    
-    def busca_ordem_ativa_maquina(self, maquina: str, usuario: int):
+
+    async def busca_ordem_ativa_maquina(self, maquina: str, usuario: int):
         ordem = {}
 
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-                sql = f"""select 
-                            os.*
-                        from ordem_servico as os 
-                        inner join ordem_servico_operador oso ON os.id = oso.ordem_servico_id 
-                        inner join maquina m ON os.maquina_id = m.id
-                        where m.nome = %s
-                        and os.status in ('A', 'E')
-                        and oso.operador_id = %s;
-                    """
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+                sql = """
+                    SELECT 
+                        os.*
+                    FROM ordem_servico as os 
+                    INNER JOIN ordem_servico_operador oso ON os.id = oso.ordem_servico_id 
+                    INNER JOIN maquina m ON os.maquina_id = m.id
+                    WHERE m.nome = %s
+                    AND os.status IN ('A', 'E')
+                    AND oso.operador_id = %s;
+                """
 
-                cursor.execute(sql, (maquina, usuario,), prepare=True)
-                
-                result = cursor.fetchone()
-            
+                await cursor.execute(sql, (maquina, usuario,), prepare=True)
+
+                result = await cursor.fetchone()
+
                 if not result:
                     return {}
-                
+
                 ordem = OrdemServico(**result)
- 
+
         return ordem
 
-    def busca_ordem_servico(self, id_ordem: int):
+    async def busca_ordem_servico(self, id_ordem: int):
         ordem = {}
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-
-                sql = f"""
-                    SELECT os.* ,STRING_AGG(oso.operador_id::text, ',') operadores FROM ordem_servico os 
-                    INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+                sql = """
+                    SELECT os.* ,STRING_AGG(oso.operador_id::text, ',') operadores 
+                    FROM ordem_servico os 
+                    INNER JOIN ordem_servico_operador oso ON oso.ordem_servico_id = os.id
                     WHERE os.id = %s
                     GROUP BY os.id
                 """
-                
-                cursor.execute(sql, (id_ordem,), prepare=True)
-                
-                result = cursor.fetchone()
-            
-                if not result:
-                    return {}
-                
-                ordem = OrdemServico(**result)
-        return ordem
-
-
-    async def busca_ordem_servico_async(self, id_ordem:int):
-        async with AsyncDatabase() as conn:
-            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
-                sql = f"""
-                           SELECT os.* ,STRING_AGG(oso.operador_id::text, ',') operadores FROM ordem_servico os 
-                           INNER JOIN ordem_servico_operador oso ON (oso.ordem_servico_id = os.id)
-                           WHERE os.id = %s
-                           GROUP BY os.id
-                       """
 
                 await cursor.execute(sql, (id_ordem,), prepare=True)
 
@@ -72,18 +53,16 @@ class OrdemService:
 
                 if not result:
                     return {}
-                # print(**result)
 
                 ordem = OrdemServico(**result)
         return ordem
 
-
-    def busca_ordens_servicos(self, empresa_id: int | None = None, status: str | None = None):
+    async def busca_ordens_servicos(self, empresa_id: int | None = None, status: str | None = None):
         ordens = []
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
                 params = []
-                sql = f"""
+                sql = """
                     SELECT 
                         os.*, 
                         m.nome AS nome_maquina, 
@@ -94,7 +73,7 @@ class OrdemService:
                     INNER JOIN maquina m ON m.id = os.maquina_id
                     WHERE 1=1
                 """
-                
+
                 if empresa_id:
                     sql += " AND os.empresa_id = %s"
                     params.append(empresa_id)
@@ -102,12 +81,12 @@ class OrdemService:
                 if status:
                     sql += " AND os.status = %s"
                     params.append(status)
-                
+
                 sql += " GROUP BY os.id, m.nome"
 
-                cursor.execute(sql, params, prepare=True)
-                result = cursor.fetchall()
-            
+                await cursor.execute(sql, params, prepare=True)
+                result = await cursor.fetchall()
+
                 if not result:
                     return []
 
@@ -120,122 +99,117 @@ class OrdemService:
                     ordens.append(ordem)
 
         return ordens
-   
-    def inserir_ordem_servico(self, ordem_servico: OrdemServico):
-        with Database() as conn: 
-            with conn.cursor() as cursor:
-                # Query de insert
+
+    async def inserir_ordem_servico(self, ordem_servico: OrdemServico):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
                 insert_query = """
-                    INSERT INTO Ordem_Servico (data_inicio, data_previsao_fim, velocidade_minima, velocidade_maxima, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
-                    VALUES (%(data_inicio)s, %(data_previsao_fim)s, %(velocidade_minima)s, %(velocidade_maxima)s, %(rpm)s, %(gestor_id)s, %(empresa_id)s, %(unidade_id)s, %(talhao_id)s, %(maquina_id)s)
+                    INSERT INTO Ordem_Servico (data_inicio, data_previsao_fim, velocidade_minima, velocidade_maxima, rpm,
+                     gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
+                    VALUES (%(data_inicio)s, %(data_previsao_fim)s, %(velocidade_minima)s, %(velocidade_maxima)s, %(rpm)s,
+                     %(gestor_id)s, %(empresa_id)s, %(unidade_id)s, %(talhao_id)s, %(maquina_id)s)
                     RETURNING id
                 """
                 try:
-                    print(insert_query, flush=True)
-                    cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
-                    id_ultimo_registro = cursor.fetchone()[0]
+                    await cursor.execute(insert_query, ordem_servico.dict(), prepare=True)
+                    id_ultimo_registro = (await cursor.fetchone())[0]
 
                     for id in ordem_servico.operadores:
                         if not id:
-                            conn.rollback()
+                            await conn.rollback()
                             return 404
 
                     values = [f"({id_ultimo_registro}, {id})" for id in ordem_servico.operadores]
 
                     insert_query = f"""
                         INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
-                        VALUES { ", ".join(values)};
+                        VALUES {", ".join(values)};
                     """
-                    # print(insert_query)
-                    cursor.execute(insert_query,prepare=True)
+                    await cursor.execute(insert_query, prepare=True)
 
                 except Exception as e:
-                    print("Deu erro no insert")
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
-                    return 400
                 finally:
-                    conn.commit()
-                    # conn.rollback()
+                    await conn.commit()
 
         return 200
 
-    def altera_ordem_servico(self, ordem_update: OrdemServico):
+    async def altera_ordem_servico(self, ordem_update: OrdemServico):
         ordem = {}
-        
-        with Database() as conn: 
-            with conn.cursor() as cursor:
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
 
                 params = None
                 if ordem_update.status == 'F':
                     update_query = """
-                                        UPDATE Ordem_Servico
-                                        SET 
-                                            status = %s,
-                                            data_fim = CASE
-                                                WHEN %s = 'F' THEN NOW()
-                                                ELSE NULL
-                                            END
-                                        WHERE id = %s;
-                                    """
+                        UPDATE Ordem_Servico
+                        SET 
+                            status = %s,
+                            data_fim = CASE
+                                WHEN %s = 'F' THEN NOW()
+                                ELSE NULL
+                            END
+                        WHERE id = %s;
+                    """
                     params = [ordem_update.status, ordem_update.status, ordem_update.id]
-                # Query de update
                 else:
                     update_query = """
-                                UPDATE Ordem_Servico
-                                SET 
-                                    status = %(status)s,
-                                    velocidade_minima = %(velocidade_minima)s,
-                                    velocidade_maxima = %(velocidade_maxima)s,
-                                    rpm = %(rpm)s
-                                WHERE id = %(id)s;
-                            """
+                        UPDATE Ordem_Servico
+                        SET 
+                            status = %(status)s,
+                            velocidade_minima = %(velocidade_minima)s,
+                            velocidade_maxima = %(velocidade_maxima)s,
+                            rpm = %(rpm)s
+                        WHERE id = %(id)s;
+                    """
                     params = ordem_update.dict()
 
                 try:
-                    cursor.execute(update_query, params, prepare=True)
+                    await cursor.execute(update_query, params, prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
 
                 for id in ordem_update.operadores:
                     if not id:
-                        conn.rollback()
+                        await conn.rollback()
                         return {}
 
                 sql = """
                     DELETE FROM ordem_servico_operador oso WHERE oso.ordem_servico_id = %s;
                 """
                 try:
-                    cursor.execute(sql, (ordem_update.id,), prepare=True)
+                    await cursor.execute(sql, (ordem_update.id,), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
 
                 values = [f"({ordem_update.id}, {id})" for id in ordem_update.operadores]
 
                 insert_query = f"""
-                                INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
-                                VALUES {", ".join(values)};
-                            """
+                    INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id)
+                    VALUES {", ".join(values)};
+                """
                 try:
-                    cursor.execute(insert_query, prepare=True)
+                    await cursor.execute(insert_query, prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
 
-                conn.commit()
-                
-                ordem = self.busca_ordem_servico(ordem_update.id)
+                await conn.commit()
+
+                ordem = await self.busca_ordem_servico(ordem_update.id)
 
                 if not ordem:
                     return {}
-    
+
         return ordem
 
-    def altera_status_ordem_servico(self, id_ordem: int, status:str):
-        with Database() as conn:
-            with conn.cursor() as cursor:
+    async def altera_status_ordem_servico(self, id_ordem: int, status: str):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
                 update_query = """
                     UPDATE Ordem_Servico
                     SET 
@@ -248,9 +222,9 @@ class OrdemService:
                 """
 
                 try:
-                    cursor.execute(update_query, (status, status, id_ordem,), prepare=True)
+                    await cursor.execute(update_query, (status, status, id_ordem,), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
+                    await conn.commit()

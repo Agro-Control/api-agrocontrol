@@ -1,47 +1,48 @@
-from connection.postgres import Database
+from connection.postgres import AsyncDatabase
 from errors import DatabaseError
-from model.maquina_model import Maquina 
+from model.maquina_model import Maquina
+
 
 class MaquinaService:
-    
-    def buscar_maquina(self, id_maquina: int):
+
+    async def buscar_maquina(self, id_maquina: int):
         maquina = {}
-        
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-                sql = f"""
-                        SELECT 
-                            *
-                        FROM Maquina m
-                        WHERE m.id = %s;
-                    """
-                
-                cursor.execute(sql, (id_maquina,), prepare=True)
-                
-                result = cursor.fetchone()
-            
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+                sql = """
+                    SELECT 
+                        *
+                    FROM Maquina m
+                    WHERE m.id = %s;
+                """
+
+                await cursor.execute(sql, (id_maquina,), prepare=True)
+                result = await cursor.fetchone()
+
                 if not result:
                     return {}
 
                 maquina = Maquina(**result)
- 
+
         return maquina
 
-    def buscar_maquinas(self, empresa_id:int,  unidade_id:int | None, codigo: str | None = None, status: str | None = None,
-                        diponibilidade_ordem: bool | None = None):
+    async def buscar_maquinas(self, empresa_id: int, unidade_id: int | None, codigo: str | None = None,
+                              status: str | None = None,
+                              diponibilidade_ordem: bool | None = None):
 
         maquinas = []
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
 
                 params = []
 
-                sql = f"""
-                        SELECT 
-                            *
-                        FROM Maquina m
-                        WHERE 1=1
-                    """
+                sql = """
+                    SELECT 
+                        *
+                    FROM Maquina m
+                    WHERE 1=1
+                """
 
                 if empresa_id:
                     sql += " AND m.unidade_id in (select u.id from unidade u where u.empresa_id = %s and u.status = 'A')"
@@ -63,48 +64,42 @@ class MaquinaService:
                     sql += " AND m.status = %s"
                     params.append(status)
 
-                cursor.execute(sql, params, prepare=True)
-                
-                result = cursor.fetchall()
+                await cursor.execute(sql, params, prepare=True)
+                result = await cursor.fetchall()
 
                 if not result:
                     return []
 
                 for row in result:
                     maquinas.append(Maquina(**row))
- 
+
         return maquinas
 
-    def inserir_maquina(self, maquina: Maquina):
-        with Database() as conn: 
-            with conn.cursor() as cursor:
-            
+    async def inserir_maquina(self, maquina: Maquina):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
                 # Query de insert
                 insert_query = """
                     INSERT INTO maquina (
                         nome, fabricante, modelo, capacidade_operacional, unidade_id
-                        )
+                    )
                     VALUES (%(nome)s, %(fabricante)s, %(modelo)s, %(capacidade_operacional)s,  %(unidade_id)s)
                 """
                 try:
-                    cursor.execute(insert_query, maquina.dict(), prepare=True)
+                    await cursor.execute(insert_query, maquina.dict(), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
+                    await conn.commit()
 
-                
+        return
 
-        return  
-
-
-    def altera_maquina(self, maquina_update: Maquina):
-        
+    async def altera_maquina(self, maquina_update: Maquina):
         maquina = {}
-        
-        with Database() as conn: 
-            with conn.cursor() as cursor: 
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
                 # Query de update
                 update_query = """
                     UPDATE maquina
@@ -116,20 +111,18 @@ class MaquinaService:
                         status = %(status)s
                     WHERE id = %(id)s
                 """
-                
+
                 try:
-                    cursor.execute(update_query, maquina_update.dict(), prepare=True)
+                    await cursor.execute(update_query, maquina_update.dict(), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
-                
-                maquina = self.buscar_maquina(maquina_update.id)
+                    await conn.commit()
+
+                maquina = await self.buscar_maquina(maquina_update.id)
 
                 if not maquina:
                     return {}
-    
+
         return maquina
-
-

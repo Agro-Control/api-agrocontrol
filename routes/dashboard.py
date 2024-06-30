@@ -11,13 +11,13 @@ router = APIRouter()
 
 
 @router.get("/dashboards/operadores_operando")
-def operadores_alocados(grupo_id: int = Query(None, description="Grupo"),
+async def operadores_alocados(grupo_id: int = Query(None, description="Grupo"),
                         empresa_id: int = Query(None, description="Empresa"),
                         unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
 
-    response = dash_service.dash_operadores_operantes_por_totais(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
+    response = await dash_service.dash_operadores_operantes_por_totais(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
 
     if not response:
 
@@ -27,14 +27,14 @@ def operadores_alocados(grupo_id: int = Query(None, description="Grupo"),
 
 
 @router.get("/dashboards/maquinas_operando")
-def maquinas_alocados(
+async def maquinas_alocados(
             grupo_id: int = Query(None, description="Grupo"),
             empresa_id: int = Query(None, description="Empresa"),
             unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
 
-    response = dash_service.dash_maquinas_operantes_por_totais(grupo_id=grupo_id, empresa_id=empresa_id,
+    response = await dash_service.dash_maquinas_operantes_por_totais(grupo_id=grupo_id, empresa_id=empresa_id,
                                                                unidade_id=unidade_id)
 
     if not response:
@@ -45,14 +45,14 @@ def maquinas_alocados(
 
 
 @router.get("/dashboards/ordem_ativas")
-def ordem_ativas(
+async def ordem_ativas(
             grupo_id: int = Query(None, description="Grupo"),
             empresa_id: int = Query(None, description="Empresa"),
             unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
 
-    response = dash_service.dash_ordem_ativas(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
+    response = await dash_service.dash_ordem_ativas(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
 
     if not response:
 
@@ -62,14 +62,14 @@ def ordem_ativas(
 
 
 @router.get("/dashboards/ordem_status")
-def ordem_status(
+async def ordem_status(
             grupo_id: int = Query(None, description="Grupo"),
             empresa_id: int = Query(None, description="Empresa"),
             unidade_id: int = Query(None, description="Unidade da Empresa")):
 
     dash_service = DashBoardsService()
 
-    response = dash_service.dash_ordem_status(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
+    response = await dash_service.dash_ordem_status(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
 
     if not response:
         return JSONResponse(status_code=403, content={"error": "Dash não construido"})
