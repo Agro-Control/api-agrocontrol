@@ -3,7 +3,7 @@ import traceback
 from typing import Optional, List
 
 import bcrypt
-from connection.postgres import Database
+from connection.postgres import Database, AsyncDatabase
 from errors import DatabaseError
 from model.gestor_model import Gestor
 from model.operador_model import Operador
@@ -12,11 +12,11 @@ from service.jwt_service import criptografar_senha, enviar_email, gerar_senha_al
 
 class UsuarioService:
     
-    def buscar_gestor(self, id: int):
+    async def buscar_gestor(self, id: int):
         gestor = {}
-        
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
                 sql = f"""
                         SELECT 
                             *
@@ -24,9 +24,9 @@ class UsuarioService:
                         where u.id = %s and tipo = 'G';
                     """
                 
-                cursor.execute(sql, (id, ), prepare=True)
+                await cursor.execute(sql, (id, ), prepare=True)
                 
-                result = cursor.fetchone()
+                result = await cursor.fetchone()
             
                 if not result:
                     return {}
@@ -35,12 +35,12 @@ class UsuarioService:
  
         return gestor
 
-    def buscar_gestores(self, grupo_id: int | None = None, empresa_id: int = None, unidade_id: int = None,
+    async def buscar_gestores(self, grupo_id: int | None = None, empresa_id: int = None, unidade_id: int = None,
                         codigo: str | None = None, status: str | None = None):
         gestores = []
-        
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
     
                 params = []
 
@@ -74,9 +74,9 @@ class UsuarioService:
                     sql += " AND u.status = %s"
                     params.append(status)
 
-                cursor.execute(sql, params, prepare=True)
+                await cursor.execute(sql, params, prepare=True)
                 
-                result = cursor.fetchall()
+                result = await cursor.fetchall()
 
                 if not result:
                     return []
@@ -86,13 +86,13 @@ class UsuarioService:
 
         return gestores
 
-    def inserir_gestor(self, gestor: Usuario):
-        with Database() as conn: 
-            with conn.cursor() as cursor:
+    async def inserir_gestor(self, gestor: Usuario):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, gestor.id, gestor.email):
+                if not await self.verifica_email_existente(cursor, gestor.id, gestor.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, gestor.id, gestor.cpf):
+                if not await self.verifica_cpf_existente(cursor, gestor.id, gestor.cpf):
                     return 409, "CPF já existente"
 
                 senha = gerar_senha_aleatoria()
@@ -106,30 +106,30 @@ class UsuarioService:
                     VALUES (%(cpf)s, %(nome)s, %(telefone)s, %(email)s, %(empresa_id)s, %(grupo_id)s , 'G', %(senha)s)
                 """
                 try:
-                    cursor.execute(insert_query, gestor.dict(), prepare=True)
+                    await cursor.execute(insert_query, gestor.dict(), prepare=True)
                     enviar_email(gestor.email, senha)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
+                    await conn.commit()
 
         return 200, ""
 
-    def altera_gestor(self, gestor_update: Gestor):
+    async def altera_gestor(self, gestor_update: Gestor):
         gestor = {}
-        
-        with Database() as conn: 
-            with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, gestor_update.id, gestor_update.email):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
+
+                if not await self.verifica_email_existente(cursor, gestor_update.id, gestor_update.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, gestor_update.id, gestor_update.cpf):
+                if not await self.verifica_cpf_existente(cursor, gestor_update.id, gestor_update.cpf):
                     return 409, "CPF já existente"
 
-                # Query de update
-                # senha = gestor_update.senha
-                # gestor_update.senha = criptografar_senha(senha)
+                if gestor_update.status == 'I':
+                    self.mascara_campos(gestor_update)
+
                 update_query = """
                     UPDATE Usuario
                     SET
@@ -142,37 +142,36 @@ class UsuarioService:
                     WHERE id = %(id)s and tipo = 'G'
                 """
                 try:
-                    cursor.execute(update_query, gestor_update.dict(), prepare=True)
+                    await cursor.execute(update_query, gestor_update.dict(), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
-                
-        gestor = self.buscar_gestor(gestor_update.id)
+                    await conn.commit()
+
+        gestor = await self.buscar_gestor(gestor_update.id)
 
         if not gestor:
             return 404, "Erro atualizar Gestor"
-    
+
         return 200, gestor
 
-
-    def buscar_operador(self, id: int):
+    async def buscar_operador(self, id: int):
         operador = {}
-            
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
                 sql = f"""
-                        SELECT 
-                            *
-                        FROM Usuario u 
-                        where u.id = %s and tipo = 'O';
-                    """
-                
-                cursor.execute(sql, (id, ), prepare=True)
-                
-                result = cursor.fetchone()
-            
+                           SELECT 
+                               *
+                           FROM Usuario u 
+                           where u.id = %s and tipo = 'O';
+                       """
+
+                await cursor.execute(sql, (id,), prepare=True)
+
+                result = await cursor.fetchone()
+
                 if not result:
                     return {}
 
@@ -180,13 +179,17 @@ class UsuarioService:
 
         return operador
 
-    def buscar_operadores(self, empresa_id: int | None = None, unidade_id: int | None = None, turno: str | None = None,
-                          codigo: str | None = None, status: str | None = None, disp_ordem: bool | None = None):
+
+
+    async def buscar_operadores(self, empresa_id: int | None = None, unidade_id: int | None = None,
+                                turno: str | None = None,
+                                codigo: str | None = None, status: str | None = None,
+                                disp_ordem: bool | None = None):
         operadores = []
-        
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
-    
+
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
+
                 params = []
 
                 sql = f"""SELECT 
@@ -210,7 +213,7 @@ class UsuarioService:
                 if turno:
                     sql += " AND u.turno LIKE %s"
                     params.append(f"%{turno}%")
-                
+
                 if codigo:
                     sql += " AND LOWER(u.nome) LIKE LOWER(%s)"
                     params.append(f"%{codigo}%")
@@ -218,38 +221,38 @@ class UsuarioService:
                 if status:
                     sql += " AND u.status = %s"
                     params.append(status)
-                
+
                 if disp_ordem:
                     sql += """ AND u.id not in (
-	                    SELECT oso.operador_id from ordem_servico_operador oso 
-	                    INNER JOIN ordem_servico os ON os.id = oso.ordem_servico_id 
-            	        WHERE os.status IN ('A', 'E')
+                        SELECT oso.operador_id from ordem_servico_operador oso 
+                        INNER JOIN ordem_servico os ON os.id = oso.ordem_servico_id 
+                        WHERE os.status IN ('A', 'E')
                     ) """
 
-                cursor.execute(sql, params, prepare=True)
-                
-                result = cursor.fetchall()
+                await cursor.execute(sql, params, prepare=True)
+
+                result = await cursor.fetchall()
 
                 if not result:
                     return []
-                
+
                 for row in result:
                     operadores.append(Operador(**row))
 
         return operadores
 
-    def inserir_operador(self, operador: Usuario):
-        with Database() as conn: 
-            with conn.cursor() as cursor:
+    async def inserir_operador(self, operador: Usuario):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, operador.id, operador.email):
+                if not await self.verifica_email_existente(cursor, operador.id, operador.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, operador.id, operador.cpf):
+                if not await self.verifica_cpf_existente(cursor, operador.id, operador.cpf):
                     return 409, "CPF já existente"
 
-                queyr_qtd_op = "SELECT COUNT(*) FROM Usuario WHERE tipo = 'O'"
-                cursor.execute(queyr_qtd_op)
-                qtd_op = cursor.fetchone()[0]
+                query_qtd_op = "SELECT COUNT(*) FROM Usuario WHERE tipo = 'O'"
+                await cursor.execute(query_qtd_op)
+                qtd_op = (await cursor.fetchone())[0]
                 ano_atual = datetime.now().year
                 novo_op = qtd_op + 1
                 matricula = f"{ano_atual}00{novo_op:03d}"
@@ -270,83 +273,67 @@ class UsuarioService:
                      %(grupo_id)s, %(empresa_id)s, %(unidade_id)s, 'O', %(senha)s)
                 """
                 try:
-                    cursor.execute(insert_query, operador.dict(), prepare=True)
+                    await cursor.execute(insert_query, operador.dict(), prepare=True)
                 except Exception as e:
-                    conn.rollback()
+                    await conn.rollback()
                     raise DatabaseError(e)
                 finally:
-                    conn.commit()
-                   
+                    await conn.commit()
+
         return 201, ""
 
-
-    def altera_operador(self, operador_update: Operador):
+    async def altera_operador(self, operador_update: Operador):
         operador = {}
-        
-        with Database() as conn: 
-            with conn.cursor() as cursor:
 
-                if not self.verifica_email_existente(cursor, operador_update.id, operador_update.email):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor() as cursor:
+
+                if not await self.verifica_email_existente(cursor, operador_update.id, operador_update.email):
                     return 409, "Email já existe"
-                if not self.verifica_cpf_existente(cursor, operador_update.id, operador_update.cpf):
+                if not await self.verifica_cpf_existente(cursor, operador_update.id, operador_update.cpf):
                     return 409, "CPF já existente"
 
-                # Query de update
-                # senha = operador_update.senha
-                # operador_update.senha = criptografar_senha(senha)
-                update_query = """
-                    UPDATE Usuario
-                    SET
-                        nome = %(nome)s,
-                        turno = %(turno)s,
-                        email = %(email)s,
-                        cpf = %(cpf)s,      
-                        gestor_id = %(gestor_id)s,
-                        unidade_id = %(unidade_id)s,
-                        status = %(status)s
-                    WHERE id = %(id)s and tipo = 'O'
-                """  
-                try:
-                    cursor.execute(update_query, operador_update.dict(), prepare=True)
-                except Exception as e:
-                    conn.rollback()
-                    raise DatabaseError(e)
-
                 if operador_update.status == 'I':
-                    delete_query = """DELETE from ordem_servico_operador oso
-                                    INNER JOIN ordem_servico os ON os.id = oso.ordem_servico_id 
-                                    WHERE os.empresa_id = %S
-                                    AND os.status IN ('A', 'E')
-                                    AND oso.operador_id = %s
-                                """
-                    params = (operador_update.empresa_id, operador_update.id, )
+                    self.mascara_campos(operador_update)
 
-                    try:
-                        cursor.execute(delete_query, params, prepare=True)
-                    except Exception as e:
-                        conn.rollback()
-                        raise DatabaseError(e)
+                update_query = """
+                       UPDATE Usuario
+                       SET
+                           nome = %(nome)s,
+                           email = %(email)s,
+                           cpf = %(cpf)s,
+                           telefone = %(telefone)s,
+                           status = %(status)s,
+                           turno = %(turno)s,
+                           unidade_id = %(unidade_id)s
+                       WHERE id = %(id)s and tipo = 'O'
+                   """
+                try:
+                    await cursor.execute(update_query, operador_update.dict(), prepare=True)
+                except Exception as e:
+                    await conn.rollback()
+                    raise DatabaseError(e)
+                finally:
+                    await conn.commit()
 
-                conn.commit()
-
-        operador = self.buscar_operador(operador_update.id)
+        operador = await self.buscar_operador(operador_update.id)
 
         if not operador:
-            return 404, "Erro alteração do Operador"
-    
+            return 404, "Erro atualizar Operador"
+
         return 200, operador
 
-    def busca_usuario(self, id:int):
-        with Database() as conn:
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+    async def busca_usuario(self, id: int):
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
                 sql = """
                            SELECT *
                            FROM Usuario
                            WHERE id = %s;
                          """
-                cursor.execute(sql, (id,), prepare=True)
+                await cursor.execute(sql, (id,), prepare=True)
 
-                result = cursor.fetchone()
+                result = await cursor.fetchone()
 
                 if result:
                     return Usuario(**result)
@@ -354,7 +341,7 @@ class UsuarioService:
                     return None
 
 
-    def verifica_email_existente(self, db, user, email):
+    async def verifica_email_existente(self, db, user, email):
         sql = f"""
                 SELECT 
                     u.id id ,
@@ -362,8 +349,8 @@ class UsuarioService:
                 FROM Usuario u
                 WHERE u.email = %s;
             """
-        db.execute(sql, (email,), prepare=True)
-        result = db.fetchone()
+        await db.execute(sql, (email,), prepare=True)
+        result = await db.fetchone()
 
         if result:
             id, email = result
@@ -371,8 +358,7 @@ class UsuarioService:
                 return False
         return True
 
-
-    def verifica_cpf_existente(self, db, user, cpf):
+    async def verifica_cpf_existente(self, db, user, cpf):
         sql = f"""
                 SELECT
                     u.id id,
@@ -380,14 +366,24 @@ class UsuarioService:
                 FROM Usuario u
                 WHERE u.cpf = %s;
             """
-        db.execute(sql, (cpf,), prepare=True)
-        result = db.fetchone()
+        await db.execute(sql, (cpf,), prepare=True)
+        result = await db.fetchone()
 
         if result:
             id, cpf = result
             if id != user:
                 return False
         return True
+
+
+    def mascara_campos(self, usuario):
+        usuario.cpf = '***'
+        usuario.telefone = '***'
+        usuario.email = '***'
+        usuario.data_contratacao = None
+
+        if usuario.tipo == 'O':
+            usuario.matricula = '***'
 
 
     @staticmethod
@@ -448,20 +444,20 @@ class UsuarioService:
         else:
             return False
 
-
-    def validar_credenciais(self, login: str, senha: str) -> Optional[Usuario]:
-        with Database() as conn: 
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+    async def validar_credenciais(self, login: str, senha: str) -> Optional[Usuario]:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
                 login_tipo = "email" if '@' in login and '.' in login else "matricula"
 
                 sql = f"""
                         SELECT *
                         FROM Usuario
-                        WHERE {login_tipo} = %s;
+                        WHERE {login_tipo} = %s
+                        AND status = 'A';
                 """
 
-                cursor.execute(sql, (login,), prepare=True)
-                result = cursor.fetchone()
+                await cursor.execute(sql, (login,), prepare=True)
+                result = await cursor.fetchone()
 
                 if result and bcrypt.checkpw(senha.encode('utf-8'), result['senha'].encode('utf-8')):
                     return Usuario(**result)

@@ -13,13 +13,13 @@ router = APIRouter()
 
 
 @router.get("/operador/{id}", response_model=Operador)
-def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Operador:
+async def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Operador:
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     operador_service = UsuarioService()
 
-    response = operador_service.buscar_operador(id)
+    response = await operador_service.buscar_operador(id)
 
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code=404, content={"error": "Operador não encontrada"})
@@ -28,7 +28,7 @@ def busca_operador(id: int, token: str = Depends(verify_token(["G"]))) -> Operad
 
 
 @router.get("/operadores")
-def busca_operadores(empresa_id: int = Query(None, description="Empresa do Operador"),
+async def busca_operadores(empresa_id: int = Query(None, description="Empresa do Operador"),
                     unidade_id: int = Query(None, description="Unidade do Operador"),
                      turno: str = Query(None, description="Turno do Operador"),
                      status: str = Query(None, description="Status do Operador"),
@@ -37,7 +37,7 @@ def busca_operadores(empresa_id: int = Query(None, description="Empresa do Opera
                      token: str = Depends(verify_token(["G"]))):
     operador_service = UsuarioService()
 
-    response = operador_service.buscar_operadores(empresa_id=empresa_id,unidade_id=unidade_id, turno=turno, status=status, codigo=codigo,
+    response = await operador_service.buscar_operadores(empresa_id=empresa_id,unidade_id=unidade_id, turno=turno, status=status, codigo=codigo,
                                                   disp_ordem=disponibilidade_ordem)
 
     if not response:
@@ -47,7 +47,7 @@ def busca_operadores(empresa_id: int = Query(None, description="Empresa do Opera
 
 
 @router.post("/operadores")
-def inserir_operador(operador: Usuario, token: str = Depends(verify_token(["G"]))):
+async def inserir_operador(operador: Usuario, token: str = Depends(verify_token(["G"]))):
     if not operador:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -60,7 +60,7 @@ def inserir_operador(operador: Usuario, token: str = Depends(verify_token(["G"])
     if not UsuarioService.valida_cpf(operador.cpf):
         return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
 
-    status, response = operador_service.inserir_operador(operador)
+    status, response = await operador_service.inserir_operador(operador)
 
     if status == 409:
         return JSONResponse(status_code=status, content={"error": response})
@@ -69,7 +69,7 @@ def inserir_operador(operador: Usuario, token: str = Depends(verify_token(["G"])
 
 
 @router.put("/operadores")
-def atualiza_operador(operador: Operador, token: str = Depends(verify_token(["G"]))):
+async def atualiza_operador(operador: Operador, token: str = Depends(verify_token(["G"]))):
     if not operador or not operador.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -82,7 +82,7 @@ def atualiza_operador(operador: Operador, token: str = Depends(verify_token(["G"
     if not UsuarioService.valida_cpf(operador.cpf):
         return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
 
-    status, response = operador_service.altera_operador(operador)
+    status, response = await operador_service.altera_operador(operador)
 
     if status in [404, 409]:
         return JSONResponse(status_code=status, content={"error": response})
@@ -91,13 +91,13 @@ def atualiza_operador(operador: Operador, token: str = Depends(verify_token(["G"
 
 
 @router.get("/gestor/{id}", response_model=Usuario)
-def busca_gestor(id: int, token: str = Depends(verify_token(["D"]))) -> Usuario:
+async def busca_gestor(id: int, token: str = Depends(verify_token(["D"]))) -> Usuario:
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     gestor_service = UsuarioService()
 
-    response = gestor_service.buscar_gestor(id)
+    response = await gestor_service.buscar_gestor(id)
 
     if not response or isinstance(response, Dict):
         return JSONResponse(status_code=404, content={"error": "Gestor não encontrada"})
@@ -106,7 +106,7 @@ def busca_gestor(id: int, token: str = Depends(verify_token(["D"]))) -> Usuario:
 
 
 @router.get("/gestores")
-def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empresarial do Gestor"),
+async def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empresarial do Gestor"),
                     empresa_id: int = Query(None, description="Empresa do Gestor"),
                     unidade_id: int = Query(None, description="Unidade do Gestor"),
                    status: str = Query(None, description="Status do Gestor"),
@@ -115,7 +115,7 @@ def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empr
 
     gestor_service = UsuarioService()
 
-    response = gestor_service.buscar_gestores(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id,
+    response = await gestor_service.buscar_gestores(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id,
                                               status=status, codigo=codigo)
 
     if not response:
@@ -125,7 +125,7 @@ def busca_gestores(grupo_id: int = Query(None, description="Numero do grupo empr
 
 
 @router.post("/gestores")
-def inserir_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
+async def inserir_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
     if not gestor:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -139,7 +139,7 @@ def inserir_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
     if not UsuarioService.valida_cpf(gestor.cpf):
         return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
 
-    status, response = gestor_service.inserir_gestor(gestor)
+    status, response = await gestor_service.inserir_gestor(gestor)
 
     if status == 409:
         return JSONResponse(status_code=409, content={"error": response})
@@ -149,7 +149,7 @@ def inserir_gestor(gestor: Usuario, token: str = Depends(verify_token(["D"]))):
 
 
 @router.put("/gestores")
-def atualiza_gestor(gestor: Gestor, token: str = Depends(verify_token(["D"]))):
+async def atualiza_gestor(gestor: Gestor, token: str = Depends(verify_token(["D"]))):
     if not gestor or not gestor.id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -162,7 +162,7 @@ def atualiza_gestor(gestor: Gestor, token: str = Depends(verify_token(["D"]))):
     if not UsuarioService.valida_cpf(gestor.cpf):
         return JSONResponse(status_code=400, content={"error": "CPF Inválido"})
 
-    status, response = gestor_service.altera_gestor(gestor)
+    status, response = await gestor_service.altera_gestor(gestor)
 
     if status in [404, 409]:
         return JSONResponse(status_code=status, content={"error": response})

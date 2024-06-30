@@ -1,17 +1,17 @@
 import datetime
 
 from connection.mongo import Mongo
-from connection.postgres import Database
+from connection.postgres import Database, AsyncDatabase
 from errors import DatabaseError, EventError
 
 
 class DashBoardsService:
 
-    def dash_operadores_operantes_por_totais(self, grupo_id: int = None, empresa_id: int = None, unidade_id:int = None):
+    async def dash_operadores_operantes_por_totais(self, grupo_id: int = None, empresa_id: int = None, unidade_id:int = None):
         dash = {}
 
-        with Database() as conn:
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
 
                 params = []
 
@@ -61,8 +61,8 @@ class DashBoardsService:
                     sql += " AND u.unidade_id = %s"
                     params.append(unidade_id)
 
-                cursor.execute(sql, params, prepare=True)
-                result = cursor.fetchone()
+                await cursor.execute(sql, params, prepare=True)
+                result = await cursor.fetchone()
 
                 if not result:
                     return {}
@@ -72,13 +72,13 @@ class DashBoardsService:
         return dash
 
 
-    def dash_maquinas_operantes_por_totais(self,grupo_id:int = None,
+    async def dash_maquinas_operantes_por_totais(self,grupo_id:int = None,
                                            unidade_id: int = None,
                                            empresa_id: int = None):
         dash = {}
 
-        with Database() as conn:
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
 
                 params = []
 
@@ -127,9 +127,9 @@ class DashBoardsService:
                     sql += " AND m.unidade_id = %s"
                     params.append(unidade_id)
 
-                cursor.execute(sql, params, prepare=True)
+                await cursor.execute(sql, params, prepare=True)
 
-                result = cursor.fetchone()
+                result = await cursor.fetchone()
 
                 if not result:
                     return {}
@@ -139,14 +139,14 @@ class DashBoardsService:
         return dash
 
 
-    def dash_ordem_ativas(self, grupo_id:int = None,
+    async def dash_ordem_ativas(self, grupo_id:int = None,
                                unidade_id: int = None,
                                empresa_id: int = None):
 
         dash = {}
 
-        with Database() as conn:
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
 
                 params = []
 
@@ -171,9 +171,9 @@ class DashBoardsService:
                     sql += " AND U.ID = %s"
                     params.append(unidade_id)
 
-                cursor.execute(sql, params, prepare=True)
+                await cursor.execute(sql, params, prepare=True)
 
-                result = cursor.fetchone()
+                result = await cursor.fetchone()
 
                 if not result:
                     return {}
@@ -183,7 +183,7 @@ class DashBoardsService:
         return dash
 
 
-    def dash_ordem_status(self,
+    async def dash_ordem_status(self,
                           grupo_id: int = None,
                           unidade_id: int = None,
                           empresa_id: int = None
@@ -191,8 +191,8 @@ class DashBoardsService:
 
         dash = {}
 
-        with Database() as conn:
-            with conn.cursor(row_factory=Database.get_cursor_type("dict")) as cursor:
+        async with AsyncDatabase() as conn:
+            async with conn.cursor(row_factory=await AsyncDatabase.get_cursor_type("dict")) as cursor:
                 params_total = []
                 params = []
 
@@ -217,9 +217,9 @@ class DashBoardsService:
                     sql_total += " AND u.id = %s"
                     params_total.append(unidade_id)
 
-                cursor.execute(sql_total, params_total, prepare=True)
+                await cursor.execute(sql_total, params_total, prepare=True)
 
-                result = cursor.fetchone()
+                result = await cursor.fetchone()
 
                 if not result:
                     dash['total_de_ordens'] = 0
@@ -234,6 +234,7 @@ class DashBoardsService:
                             WHEN os.status = 'E' THEN 'Em andamento'
                             WHEN os.status = 'F' THEN 'Finalizado'
                             WHEN os.status = 'C' THEN 'Cancelado'
+                            WHEN os.status = 'I' THEN 'Inativo'
                         ELSE
                             'Fez merda'
                         END as "STATUS",
@@ -258,9 +259,9 @@ class DashBoardsService:
 
                 sql += " GROUP BY os.status"
 
-                cursor.execute(sql, params, prepare=True)
+                await cursor.execute(sql, params, prepare=True)
 
-                result = cursor.fetchall()
+                result = await cursor.fetchall()
 
                 if not result:
                     return dash

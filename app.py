@@ -46,15 +46,15 @@ app.include_router(grupo_router)
 app.include_router(dash_router)
 
 @app.get("/")
-async def root():
+async def hello():
     return {"message": "Hello word"}
 
 
 @app.post("/login")
-def login(login: Login):
+async def login(login: Login):
     
     usuario_service = UsuarioService()
-    usuario = usuario_service.validar_credenciais(login.login, login.senha)
+    usuario = await usuario_service.validar_credenciais(login.login, login.senha)
     
     if usuario:
         # Remover a senha do objeto de usuário
@@ -73,13 +73,13 @@ def login(login: Login):
 
 # rota para revalidar usuario logado, deve morrer dps
 @app.get("/usersession/{id}")
-def user_logado(id: int, token: str = Depends(verify_token(["D", "G", "O"]))):
+async def user_logado(id: int, token: str = Depends(verify_token(["D", "G", "O"]))):
 
     if not id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     usuario_service = UsuarioService()
-    usuario = usuario_service.busca_usuario(id)
+    usuario = await usuario_service.busca_usuario(id)
 
     if not usuario:
         raise HTTPException(status_code=401, detail="Usuario inválido")
