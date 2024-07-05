@@ -3,7 +3,9 @@ from connection.mongo import Mongo
 from errors import EventError
 from errors import DatabaseError
 from model.ordem_de_servico_model import OrdemServico
+from model.ordem_alocacao import OrdemAlocacao
 from model.operador_model import Operador
+from bson import ObjectId
 
 
 class OrdemService:
@@ -228,3 +230,34 @@ class OrdemService:
                     raise DatabaseError(e)
                 finally:
                     await conn.commit()
+
+    async def alocar_recurso(self, ordem_alcacao: OrdemAlocacao):
+        async with Mongo() as client:
+            try:
+                ordem_insert = ordem_alcacao.dict()
+                ordem_insert.pop('id', None)
+                result = await client.agro_control.operadores_maquinas.insert_one(ordem_insert)
+                if not result:
+                    return
+
+                if not result:
+                    return
+
+                return result.inserted_id
+            except Exception as ex:
+                raise EventError(ex)
+        return
+
+    async def desalocar_recurso(self, id_col: str):
+        async with Mongo() as client:
+            try:
+                filtro = {"_id": ObjectId(str(id_col))}
+
+                result = await client.agro_control.operadores_maquinas.delete_one(filtro)
+
+                if result.deleted_count > 0:
+                    return
+
+            except Exception as ex:
+                raise EventError(ex)
+        return

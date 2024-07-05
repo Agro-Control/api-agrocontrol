@@ -96,14 +96,15 @@ async def ordem_eventos(ordem_id: int = Query(None, description="Ordem da Empres
 
 @router.get("/dashboards/maquinas_manutencao")
 async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta de maquinas e manutencao"),
-                       empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao")):
+                       empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao"),
+                       maquina_id: int = Query(None, description="Maquinia consulta de maquina manutenção")):
 
     if not empresa_id and not grupo_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     dash_service = DashBoardsService()
 
-    response = await dash_service.dash_manutencao_maquina(grupo_id=grupo_id, empresa_id=empresa_id)
+    response = await dash_service.dash_manutencao_maquina(grupo_id=grupo_id, empresa_id=empresa_id, maquina_id=maquina_id)
 
     if not response:
         return JSONResponse(status_code=403, content={"error": "Sem eventos"})
@@ -113,14 +114,15 @@ async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta d
 
 @router.get("/dashboards/tempo_operacional")
 async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta de maquinas e manutencao"),
-                       empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao")):
+                       empresa_id: int = Query(None, description="Empresa consulta de maquinas e manutencao"),
+                       maquina_id: int = Query(None, description="Maquinia consulta de maquina manutenção")):
 
     if not empresa_id and not grupo_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     dash_service = DashBoardsService()
 
-    response = await dash_service.dash_tempo_operacao_producao(grupo_id=grupo_id, empresa_id=empresa_id)
+    response = await dash_service.dash_tempo_operacao_producao(grupo_id=grupo_id, empresa_id=empresa_id, maquina_id=maquina_id)
 
     if not response:
         return JSONResponse(status_code=403, content={"error": "Sem operacional"})

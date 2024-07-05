@@ -11,6 +11,7 @@ class Evento(BaseModel):
     ocioso: int | None = None
     ordem_servico_id: int | None = None
     maquina_id: int | None = None
+    operador_nome: str | None = None
     operador_id: int | None = None
     empresa_id: int | None = None
     grupo_id: int | None = None

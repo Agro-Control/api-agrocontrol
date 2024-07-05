@@ -15,38 +15,13 @@ class DashBoardsService:
 
                 params = []
 
-                sql_sub = """
+                sql = """
                     SELECT 
-                        COUNT(*)
+                        COUNT(*) operadores_totais
                     FROM usuario u
-                    INNER JOIN unidade un ON u.unidade_id  = un.id 
+                    INNER JOIN unidade un ON u.unidade_id = un.id 
                     INNER JOIN empresa e ON e.id = un.empresa_id 
                     WHERE u.tipo = 'O'
-                """
-
-                if grupo_id:
-                    sql_sub += " AND u.grupo_id = %s"
-                    params.append(grupo_id)
-
-                if empresa_id:
-                    sql_sub += " AND u.empresa_id = %s"
-                    params.append(empresa_id)
-
-                if unidade_id:
-                    sql_sub += " AND u.unidade_id = %s"
-                    params.append(unidade_id)
-
-                sql = f"""
-                    SELECT 
-                        COUNT(*) AS operadores_ativos,
-                        ({sql_sub}) operadores_totais
-                    FROM usuario u
-                    LEFT JOIN ordem_servico_operador oso ON oso.operador_id = u.id
-                    LEFT JOIN ordem_servico os ON os.id = oso.ordem_servico_id
-                    INNER JOIN unidade un ON u.unidade_id  = un.id 
-                    INNER JOIN empresa e ON  e.id = un.empresa_id 
-                    WHERE os.status in ('A', 'E') 
-                    AND u.tipo = 'O'
                 """
 
                 if grupo_id:
@@ -69,10 +44,24 @@ class DashBoardsService:
 
                 dash = result
 
+        async with Mongo() as client:
+
+            filtro = {
+                'grupo_id': grupo_id,
+                'empresa_id': empresa_id
+            }
+
+            result = await client.agro_control.operadores_maquinas.count_documents(filtro)
+
+            if not result:
+                dash['operadores_ativos'] = 0
+                return dash
+
+            dash['operadores_ativos'] = result
+
         return dash
 
-
-    async def dash_maquinas_operantes_por_totais(self,grupo_id:int = None,
+    async def dash_maquinas_operantes_por_totais(self, grupo_id: int = None,
                                            unidade_id: int = None,
                                            empresa_id: int = None):
         dash = {}
@@ -82,38 +71,14 @@ class DashBoardsService:
 
                 params = []
 
-                sql_sub = """
+                sql = """
                             SELECT 
-                                COUNT(*)
+                                COUNT(*) maquinas_total
                             FROM maquina m
                             INNER JOIN unidade u ON m.unidade_id  = u.id
                             INNER JOIN empresa e ON u.empresa_id = e.id
                             WHERE m.status = 'A'
                         """
-
-                if grupo_id:
-                    sql_sub += " AND e.grupo_id = %s"
-                    params.append(grupo_id)
-
-                if empresa_id:
-                    sql_sub += " AND e.id = %s"
-                    params.append(empresa_id)
-
-                if unidade_id:
-                    sql_sub += " AND m.unidade_id = %s"
-                    params.append(unidade_id)
-
-                sql = f"""
-                        SELECT 
-                            COUNT(*) AS maquina_operando,
-                            ({sql_sub}) maquinas_total
-                        FROM maquina m
-                        LEFT JOIN ordem_servico os ON os.maquina_id = m.id
-                        INNER JOIN unidade u ON m.unidade_id  = u.id
-                        INNER JOIN empresa e ON u.empresa_id = e.id
-                        WHERE m.status = 'A'
-                        AND os.status in ('A', 'E')
-                """
 
                 if grupo_id:
                     sql += " AND e.grupo_id = %s"
@@ -136,6 +101,20 @@ class DashBoardsService:
 
                 dash = result
 
+        async with Mongo() as client:
+
+            filtro = {
+                'grupo_id': grupo_id,
+                'empresa_id': empresa_id
+            }
+
+            result = await client.agro_control.operadores_maquinas.count_documents(filtro)
+
+            if not result:
+                dash['maquina_operando'] = 0
+                return dash
+
+            dash['maquina_operando'] = result
         return dash
 
 
@@ -225,8 +204,6 @@ class DashBoardsService:
                     dash['total_de_ordens'] = 0
                     return dash
 
-                dash['total_de_ordens'] = result['total']
-
                 sql = """
                     SELECT 
                         CASE
@@ -236,7 +213,7 @@ class DashBoardsService:
                             WHEN os.status = 'C' THEN 'Cancelado'
                             WHEN os.status = 'I' THEN 'Inativo'
                         ELSE
-                            'Fez merda'
+                            'Status não mapeado'
                         END as "STATUS",
                         COUNT(os.id) total
                     FROM ordem_servico os
@@ -294,7 +271,7 @@ class DashBoardsService:
 
                 ]
 
-                qtd_eventos = {"eventos": [], "duracao_total": 0, "total": 0}
+                qtd_eventos = {"eventos": []}
 
                 async for result in client.agro_control.eventos.aggregate(pipeline):
                     qtd_eventos['eventos'].append({
@@ -308,7 +285,7 @@ class DashBoardsService:
 
         return qtd_eventos
 
-    async def dash_manutencao_maquina(self, grupo_id: int, empresa_id: int):
+    async def dash_manutencao_maquina(self, grupo_id: int = None, empresa_id: int = None, maquina_id: int = None):
         manutencao_maquinas = {}
 
         async with Mongo() as client:
@@ -317,10 +294,16 @@ class DashBoardsService:
                 now = datetime.datetime.now().date()
                 now = datetime.datetime.combine(now, datetime.time.min)
 
-                criterio = {"grupo_id": grupo_id}
+                criterio = {}
+
+                if grupo_id:
+                    criterio["grupo_id"] = grupo_id
 
                 if empresa_id:
                     criterio["empresa_id"] = empresa_id
+
+                if maquina_id:
+                    criterio["maquina_id"] = maquina_id
 
                 pipeline = [
                     {
@@ -401,7 +384,7 @@ class DashBoardsService:
 
         return manutencao_maquinas
 
-    async def dash_tempo_operacao_producao(self, grupo_id: int, empresa_id: int):
+    async def dash_tempo_operacao_producao(self, grupo_id: int = None, empresa_id: int = None, maquina_id: int = None):
         operacional = {}
         async with Mongo() as client:
             try:
@@ -409,10 +392,16 @@ class DashBoardsService:
                 now = datetime.datetime.now().date()
                 now = datetime.datetime.combine(now, datetime.time.min)
 
-                criterio = {"grupo_id": grupo_id}
+                criterio = {}
+
+                if grupo_id:
+                    criterio["grupo_id"] = grupo_id
 
                 if empresa_id:
                     criterio["empresa_id"] = empresa_id
+
+                if maquina_id:
+                    criterio["maquina_id"] = maquina_id
 
                 pipeline = [
                     {

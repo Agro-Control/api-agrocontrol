@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from service.jwt_service import verify_token
 from service.maquina_service import MaquinaService
 from service.evento_service import EventoService
+from service.usuario_service import UsuarioService
 from model.maquina_model import Maquina
 from fastapi.responses import JSONResponse
 from typing import Dict
@@ -83,7 +84,17 @@ async def busca_info_maquina(maquina_id: int, token: str = Depends(verify_token(
 
     evento_service = EventoService()
 
-    response = await evento_service.info_maquina(maquina_id)
+    response = {}
+
+    info_maquina = await evento_service.info_maquina(maquina_id)
+    response.update(info_maquina)
+
+    operador_conectado = await evento_service.busca_operador_conectado(maquina_id)
+
+    if operador_conectado:
+        usuario_service = UsuarioService()
+        operador_conectado = await usuario_service.buscar_operador(operador_conectado)
+        response["operador_conectado"] = operador_conectado
 
     return response
 

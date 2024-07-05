@@ -60,8 +60,9 @@ class Ordem:
 
 
 class Operador:
-    def __init__(self, id, empresa_id, grupo_id, turno):
+    def __init__(self, id, nome, empresa_id, grupo_id, turno):
         self.id_ = id
+        self.nome = nome
         self.turno = turno
         self.fim_turno = self.get_fim_turno()
         self.empresa_id = empresa_id
@@ -116,6 +117,8 @@ class Simulator(threading.Thread):
             self.envia_evento(event)
             self.ordem.status = 'E'
 
+        id_col = self.aloca_operador_maquina()
+
         current_event, old_event = None, None
 
         while self.running:
@@ -132,6 +135,8 @@ class Simulator(threading.Thread):
                 old_event.set_data_fim(data_fim=datetime.datetime.now())
                 self.envia_evento(old_event, "PUT")
                 self.envia_evento(current_event)
+
+                self.desaloca_operador_maquina(id_col)
                 break
 
             if current_event.name == "aguardando_transbordo_automatico":
@@ -200,6 +205,7 @@ class Simulator(threading.Thread):
             data = {
                 "ordem_servico_id": self.ordem.id_,
                 "operador_id": self.ordem.operador.id_,
+                "operador_nome": self.ordem.operador.nome,
                 "maquina_id": self.ordem.maquina.id_,
                 "empresa_id": self.ordem.operador.empresa_id,
                 "grupo_id": self.ordem.operador.grupo_id,
@@ -241,6 +247,33 @@ class Simulator(threading.Thread):
 
         return
 
+    def aloca_operador_maquina(self):
+        try:
+            data = {
+                "operador_id": self.ordem.operador.id_,
+                "maquina_id": self.ordem.maquina.id_,
+                "ordem_id": self.ordem.id_,
+                "data": datetime.datetime.now(),
+                "empresa_id": self.ordem.operador.empresa_id,
+                "grupo_id": self.ordem.operador.grupo_id
+            }
+
+            response = requests.request("POST", 'http://api/ordem/alocar_operador_maquina', data=json.dumps(data))
+
+            if response:
+                response = response.json()
+                return response['id']
+        except:
+            pass
+
+    def desaloca_operador_maquina(self, id_col):
+        try:
+            response = requests.request("DELETE", f'http://api/ordem/alocar_operador_maquina?id={id_col}')
+        except:
+            pass
+
+        return
+
 
 class Main:
     def __init__(self):
@@ -265,6 +298,7 @@ class Main:
                                 os.maquina_id as maquina_id,
                                 oso.operador_id as operador_id,
                                 os.status status,
+                                u.nome as nome,
                                 u.turno as turno,
                                 u.empresa_id empresa_id,
                                 u.grupo_id grupo_id,
@@ -285,7 +319,9 @@ class Main:
                         for row in result:
                             ordens.append(row['id'])
                             if row['id'] not in self.ordens_ativas.copy():
-                                operador = Operador(row['operador_id'], row['empresa_id'], row['grupo_id'], row['turno'])
+                                operador = Operador(row['operador_id'], row['nome'], row['empresa_id'],
+                                                    row['grupo_id'], row['turno'])
+
                                 maquina = Maquina(row['maquina_id'])
                                 ordem = Ordem(row['id'], maquina, operador, row['status'], row['data_previsao_fim'])
 
