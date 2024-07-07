@@ -91,14 +91,15 @@ async def talhao_info_clima(talhao_id: int = Query(None, description="Talhao con
 @router.get("/talhao/info_clima_detalhado")
 async def talhao_info_clima_detalhado(talhao_id: int = Query(None, description="Identificador do talhao para consultar os eventos de clima"),
                        data_inicio: datetime = Query(None, description="Data inicio de eventos de clima"),
-                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima")):
+                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima"),
+                       tipo: str = Query(None, description="Tipo/Nome do evento")):
 
     if not talhao_id and not data_inicio and not data_fim:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     evento_service = EventoService()
 
-    response = await evento_service.eventos_clima_por_dia_detalhado(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim)
+    response = await evento_service.eventos_clima_por_dia_detalhado(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim, tipo = tipo)
 
     if not response:
         return JSONResponse(status_code=403, content={"error": "Sem operacional"})
@@ -108,14 +109,15 @@ async def talhao_info_clima_detalhado(talhao_id: int = Query(None, description="
 @router.get("/talhao/info_clima_anual_detalhado")
 async def talhao_info_clima_detalhado(talhao_id: int = Query(None, description="Identificador do talhao para consultar os eventos de clima"),
                        data_inicio: datetime = Query(None, description="Data inicio de eventos de clima"),
-                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima")):
+                       data_fim: datetime = Query(None, description="Data inicio de eventos de clima"),
+                       tipo: str = Query(None, description="Tipo/Nome do evento")):
 
     if not talhao_id and not data_inicio and not data_fim:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
     evento_service = EventoService()
 
-    response = await evento_service.eventos_clima_por_mes_ano_detalhado(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim)
+    response = await evento_service.eventos_clima_por_mes_ano_detalhado(talhao_id = talhao_id, data_inicio=data_inicio, data_fim=data_fim, tipo = tipo)
 
     if not response:
         return JSONResponse(status_code=403, content={"error": "Sem operacional"})

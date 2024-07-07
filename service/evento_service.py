@@ -176,7 +176,7 @@ class EventoService:
         return info_maquina
     
     async def eventos_clima_por_dia(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
-        info_clima = {}
+        info_clima = []
         logger.info(f'Iniciando processamento para talhão {talhao_id} de {data_inicio} até {data_fim}')
         async with Mongo() as client:
             try:
@@ -184,7 +184,6 @@ class EventoService:
                     {
                         "$match": {
                             "talhao_id": talhao_id,
-                            "nome": "clima",
                             "data_inicio": {
                                 "$gte": data_inicio,
                                 "$lt": data_fim
@@ -211,21 +210,22 @@ class EventoService:
 
                 async for result in client.agro_control.eventos.aggregate(pipeline):
                     dia = result['_id']['dia']
-                    info_clima[dia] = result['count']
-                    logger.debug(f'Dia {dia}: {result["count"]} eventos climáticos')
+                    count = result['count']
+                    info_clima.append({"value": count, "day": dia})
+                    logger.debug(f'Dia {dia}: {count} eventos')
             except Exception as ex:
-             logger.error(f'Erro ao processar eventos climáticos: {ex}', exc_info=True)
-             raise EventError(ex)
+                logger.error(f'Erro ao processar eventos climáticos: {ex}', exc_info=True)
+                raise EventError(ex)
             
-        logger.info('Processamento concluído com sucesso')
+        logger.info('Processamento concluído com sucesso', info_clima)
         return info_clima
     
-    async def eventos_clima_por_dia_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
+    async def eventos_clima_por_dia_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime, tipo : str):
         info_clima = {
             "id": f"{data_inicio.date()}",
             "data": []
         }
-        logger.info(f'Iniciando processamento detalhado para talhão {talhao_id} de {data_inicio} até {data_fim}')
+        logger.info(f'Iniciando processamento detalhado do {tipo} para talhão {talhao_id} de {data_inicio} até {data_fim}')
         
         async with Mongo() as client:
             try:
@@ -233,7 +233,7 @@ class EventoService:
                     {
                         "$match": {
                             "talhao_id": talhao_id,
-                            "nome": "clima",
+                            "nome": tipo,
                             "data_inicio": {
                                 "$gte": data_inicio,
                                 "$lt": data_fim
@@ -267,13 +267,13 @@ class EventoService:
                     logger.debug(f'Dia {dia}: duração total {result["duracao_total"]} minutos')
 
             except Exception as ex:
-                logger.error(f'Erro ao processar eventos climáticos detalhados: {ex}', exc_info=True)
+                logger.error(f'Erro ao processar eventos de {tipo} detalhados: {ex}', exc_info=True)
                 raise EventError(ex)
         
         logger.info('Processamento detalhado concluído com sucesso')
         return info_clima
     
-    async def eventos_clima_por_mes_ano_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
+    """ async def eventos_clima_por_mes_ano_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
         info_clima = []
 
         logger.info(f'Iniciando processamento detalhado para talhão {talhao_id} de {data_inicio} até {data_fim}')
@@ -348,6 +348,109 @@ class EventoService:
             except Exception as ex:
                 logger.error(f'Erro ao processar eventos climáticos detalhados: {ex}', exc_info=True)
                 raise EventError(ex)
+
+        logger.info('Processamento detalhado concluído com sucesso')
+        return info_clima"""
+
+    async def eventos_clima_por_mes_ano_detalhado(self, talhao_id: int, data_inicio: datetime, data_fim: datetime, tipo : str):
+        info_clima = []
+
+        logger.info(f'Iniciando processamento detalhado para talhão {talhao_id} de {data_inicio} até {data_fim}')
+
+        async with Mongo() as client:
+            try:
+                # Função para obter eventos climáticos por ano e agrupá-los por mês
+                async def obter_eventos_por_mes_ano(ano_inicio):
+                    ano_fim = ano_inicio + 1
+
+                    pipeline = [
+                        {
+                            "$match": {
+                                "talhao_id": talhao_id,
+                                "nome": tipo,
+                                "data_inicio": {
+                                    "$gte": datetime(ano_inicio, 1, 1),
+                                    "$lt": datetime(ano_fim, 1, 1)
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": {
+                                    "ano_mes": {
+                                        "$dateToString": {
+                                            "format": "%Y-%m",
+                                            "date": "$data_inicio"
+                                        }
+                                    }
+                                },
+                                "duracao_total": {"$sum": "$duracao"}
+                            }
+                        },
+                        {
+                            "$sort": {"_id.ano_mes": 1}
+                        }
+                    ]
+
+                    eventos_mes_ano = []
+
+                    async for result in client.agro_control.eventos.aggregate(pipeline):
+                        ano_mes = result['_id']['ano_mes']
+                        eventos_mes_ano.append({
+                            "data_evento": ano_mes,
+                            "duracao": result['duracao_total']
+                        })
+                        logger.debug(f'Mês {ano_mes}: duração total {result["duracao_total"]} minutos')
+
+                    return eventos_mes_ano
+
+                # Função para preencher meses faltantes com duração zero
+                def preencher_meses_faltantes(eventos, ano_inicio, ano_fim):
+                    todos_meses = set()
+                    for ano in range(ano_inicio, ano_fim + 1):
+                        for mes in range(1, 13):
+                            todos_meses.add(f"{ano}-{mes:02d}")
+
+                    eventos_dict = {evento['data_evento']: evento for evento in eventos}
+                    eventos_completos = []
+                    
+                    for mes in todos_meses:
+                        if mes in eventos_dict:
+                            eventos_completos.append(eventos_dict[mes])
+                        else:
+                            eventos_completos.append({"data_evento": mes, "duracao": 0})
+                    
+                    eventos_completos.sort(key=lambda x: x['data_evento'])
+                    return eventos_completos
+
+                # Obter eventos climáticos para o período especificado
+                eventos_periodo = await obter_eventos_por_mes_ano(data_inicio.year)
+                eventos_periodo = preencher_meses_faltantes(eventos_periodo, data_inicio.year, data_fim.year)
+
+                if eventos_periodo:
+                    info_clima.append({
+                        "id": data_inicio.year,
+                        "data": eventos_periodo
+                    })
+
+                # Obter eventos climáticos para os últimos 2 anos
+                for anos_antes in range(1, 3):
+                    ano_anterior = data_inicio.year - anos_antes
+                    eventos_anos_antes = await obter_eventos_por_mes_ano(ano_anterior)
+                    eventos_anos_antes = preencher_meses_faltantes(eventos_anos_antes, ano_anterior, ano_anterior)
+
+                    if eventos_anos_antes:
+                        info_clima.append({
+                            "id": ano_anterior,
+                            "data": eventos_anos_antes
+                        })
+
+            except Exception as ex:
+                logger.error(f'Erro ao processar eventos de {tipo} detalhados: {ex}', exc_info=True)
+                raise EventError(ex)
+
+        # Ordenar os eventos climáticos por ano de forma crescente
+        info_clima = sorted(info_clima, key=lambda x: x['id'])
 
         logger.info('Processamento detalhado concluído com sucesso')
         return info_clima
