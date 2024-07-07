@@ -254,10 +254,14 @@ class EventoService:
 
 
     async def busca_operador_conectado(self, maquina_id: int):
+        result = []
+
         async with Mongo() as client:
             try:
                 query = {"maquina_id": int(maquina_id)}
-                result = await client.agro_control.operadores_maquinas.find(query)
+
+                async for documento in client.agro_control.operadores_maquinas.find(query):
+                    result = documento
 
                 if result:
                     return result["operador_id"]
