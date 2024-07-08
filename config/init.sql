@@ -152,11 +152,12 @@ INSERT INTO Unidade (nome, cep, estado, cidade, bairro, logradouro, empresa_id, 
 VALUES ('Unidade 1', '81170230', 'PR', 'Curitiba', 'Cidade Industrial', 'Cyro Correia Pereira', 1, 1),
        ('Unidade 2', '81590510', 'PR', 'Curitiba', 'Uberaba', 'Olindo Caetani', 1, 1);
 
--- Inserir dois operadores
-INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, senha)
-VALUES ('01590575075', '202400001', 'Operador 1-SML', 'M', 1, 1, 1, 1, 'O', '$2b$12$WFapcsRLl1nLVa7xqbjoBuM1qTQTixqHyoof7EyGcWVEAHDVR3WOK'),
-       ('01590575076', '202400002', 'Operador 2-SML', 'T', 1, 1, 1, 2, 'O', '$2b$12$8J3mPQ.Bqk6ZBQTc13awLuLkvNoDuTtDon1gY5tJ4WvIi/z0H4656'),
-       ('73941491024', '202400003', 'Operador 3-SML', 'N', 1, 1, 1, 1, 'O', '$2b$12$V/xVGP.Eo5ekB3YC5Si7Me3QBS6pxIl8eG0TZC1fckEcUJFzmby7q');
+-- Inserir operadores
+INSERT INTO Usuario (cpf, matricula, nome, turno, gestor_id, grupo_id, empresa_id, unidade_id, tipo, email, senha)
+VALUES ('01590575075', '202400001', 'Vinicius', 'M', 1, 1, 1, 1, 'O', 'vinicius@example.com', '$2b$12$MSOV1vVhuTCmf0lTIkNNjuhVtxZ7xXV.DGIiq5NrRO2.HXCOS.aWW'),
+       ('01590575076', '202400002', 'Maicon', 'T', 1, 1, 1, 1, 'O', 'maicon@example.com', '$2b$12$DPiNCoqQ3AVviY3vSU7QyemeGXZUDgkF7NiHlWbYFX61zaVMQfB/G'),
+       ('38135804075', '202400003', 'Cristopher', 'N', 1, 1, 1, 1, 'O', 'critopher@example.com', '$2b$12$C8ksPA7N.1twxZoqUpyRsefeQ14LauYieX.nunTY0p6s3qHVcXt/O'),
+       ('73941491024', '202400004', 'Gabriel', 'N', 1, 1, 1, 2, 'O', 'gabriel@example.com', '$2b$12$yRbKsqv9t1WJ6xfqnU9niOv.csKHqMS8.T8AywJG40R631BI4CGni');
 
 -- Inserir uma máquina
 INSERT INTO Maquina (nome, fabricante, modelo, capacidade_operacional, unidade_id)
@@ -167,10 +168,3 @@ VALUES ('Máquina 1', 'Fabricante 1', 'Modelo 1', 100, 1),
 INSERT INTO Talhao (codigo, tamanho, status, unidade_id)
 VALUES ('1234', '10', 'A', 1);
 
--- Inserir uma ordem de serviço
-INSERT INTO Ordem_Servico (velocidade_minima, velocidade_maxima, data_inicio, data_previsao_fim, rpm, gestor_id, empresa_id, unidade_id, talhao_id, maquina_id)
-VALUES (10.5, 20.5, NOW(), NOW() + INTERVAL '10 minutes',  1000.0, 2, 1, 1, 1, 1);
-
--- Inserir um talhão
-INSERT INTO Ordem_Servico_Operador (ordem_servico_id, operador_id) 
-VALUES	(1, 4), (1, 6);
