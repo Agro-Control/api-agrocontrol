@@ -133,7 +133,7 @@ class DashBoardsService:
                                 count(*) ordens_totais
                             FROM ordem_servico os
                             INNER JOIN unidade u ON os.unidade_id = u.id 
-                            INNER JOIN empresa e ON e.id  = os.empresa_id
+                            INNER JOIN empresa e ON e.id = os.empresa_id
                 """
                 if grupo_id:
                     sql += " AND e.grupo_id = %s"
@@ -156,6 +156,8 @@ class DashBoardsService:
                     return dash
 
                 dash.update(result)
+
+                params = []
 
                 sql = """
                         SELECT 
