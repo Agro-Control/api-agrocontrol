@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from service.jwt_service import verify_token
 from service.ordem_service import OrdemService
 from model.ordem_de_servico_model import OrdemServico
+from model.ordem_alocacao import OrdemAlocacao
 from fastapi.responses import JSONResponse
 from typing import Dict
 from fastapi import Response, Query
@@ -26,6 +27,32 @@ async def ordem_maquina_ativa(maquina: str, usuario: int, ):
         return JSONResponse(status_code=404, content={"error": "Ordem de servico não encontrada"})
     
     return response
+
+
+@router.post("/ordem/alocar_operador_maquina")
+async def ordem_alocar_operador_maquina(ordem_alocacao: OrdemAlocacao):
+
+    if not ordem_alocacao:
+        return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
+
+    ordem_service = OrdemService()
+    response = await ordem_service.alocar_recurso(ordem_alocacao)
+
+    return JSONResponse(status_code=201, content={"id": str(response)})
+
+
+@router.delete("/ordem/alocar_operador_maquina")
+async def ordem_desalocar_operador_maquina(id: str):
+
+    if not id:
+        return JSONResponse(status_code=400, content={"error": "Requisição inválida"})
+
+    ordem_service = OrdemService()
+
+    await ordem_service.desalocar_recurso(id)
+
+    return JSONResponse(status_code=200, content={"detail": "ok"})
+
 
 @router.get("/ordens/{id_ordem}")
 async def busca_ordem(id_ordem:int, token: str = Depends(verify_token(["A", "G"]))):
@@ -52,7 +79,7 @@ async def buscar_ordens(empresa_id: int = Query(None, description="Empresa perte
     response = await ordem_service.busca_ordens_servicos(empresa_id=empresa_id, status=status)
 
     if not response:
-        return JSONResponse(status_code= 404, content={"error": "Ordens não encontradas"})
+        return JSONResponse(status_code=404, content={"error": "Ordens não encontradas"})
 
     return {"ordens_servico": response}
 

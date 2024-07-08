@@ -2,8 +2,11 @@
 
 from connection.mongo import Mongo
 from model.evento_model import Evento
+from model.operador_model import Operador
+from model.ordem_alocacao import OrdemAlocacao
 from errors import EventError
 from bson import ObjectId
+
 from datetime import timezone
 from datetime import datetime
 import logging
@@ -33,6 +36,7 @@ class EventoService:
                 evento.ordem_servico_id = documento.get('ordem_servico_id', None)
                 evento.maquina_id = documento.get('maquina_id', None)
                 evento.talhao_id = documento.get('talhao_id', None)
+                evento.operador_nome = documento.get('operador_nome', None)
                 evento.operador_id = documento.get('operador_id', None)
                 evento.empresa_id = documento.get('empresa_id', None)
                 evento.grupo_id = documento.get('grupo_id', None)
@@ -78,14 +82,15 @@ class EventoService:
                 raise EventError(ex)
         return
 
-
     async def info_maquina(self, maquina_id):
         info_maquina = {
             "ultimos_eventos": [],
+            "manutencao_eventos": [],
             "qtd_manutencao_mes": 0,
             "tempo_total_manutencao_mes": 0,
             "qtd_manutencao_dia": 0,
-            "tempo_total_manutencao_dia": 0
+            "tempo_total_manutencao_dia": 0,
+            "tempo_total_todos_eventos:": 0,
         }
 
         async with Mongo() as client:
@@ -95,6 +100,7 @@ class EventoService:
 
                 eventos_ignorar = ["aguardando_transbordo", "clima", "troca_turno", "fim_ordem"]
 
+                # busca por ultimos 5 eventos geral
                 pipeline = [
                     {'$match': {'maquina_id': maquina_id, 'nome': {'$nin': eventos_ignorar}}},
                     {'$sort': {'data_inicio': -1}},
@@ -116,6 +122,22 @@ class EventoService:
                     evento.ocioso = documento.get('ocioso', None)
                     info_maquina['ultimos_eventos'].append(evento)
 
+
+                # busca por eventos de manutenlção do dia
+                pipeline = [
+                    {'$match': {'maquina_id': maquina_id}},
+                    {
+                        "$group": {
+                            "_id": '$nome',
+                            'count': {'$sum': 1},
+                            "duracao_total": {"$sum": "$duracao"}
+                        }
+                    },
+                    {'$sort': {'data_inicio': -1}},
+                    {'$limit': 5}
+                ]
+
+                # busca por tempo de manutenção mes
                 pipeline = [
                     {
                         "$match": {
@@ -144,6 +166,40 @@ class EventoService:
                         "tempo_total_manutencao_mes": result['duracao_total']
                     })
 
+                # busca por eventos de manutenção do dia
+                pipeline = [
+                    {
+                        "$match": {
+                            "maquina_id": maquina_id,
+                            "data_inicio": {
+                                "$gte": datetime.datetime(year=now.year, month=now.month, day=now.day)},
+                            "data_fim": {
+                                "$lte": datetime.datetime(year=now.year, month=now.month, day=now.day,
+                                                          hour=23,
+                                                          minute=59, second=59)},
+                            "nome": "manutencao"
+                        }
+                    }
+                ]
+
+                async for documento in client.agro_control.eventos.aggregate(pipeline):
+                    evento = Evento()
+                    evento.id = str(documento['_id'])
+                    evento.nome = documento.get('nome', None)
+                    evento.data_inicio = documento.get('data_inicio', None)
+                    evento.data_fim = documento.get('data_fim', None)
+                    evento.duracao = documento.get('duracao', None)
+                    evento.ordem_servico_id = documento.get('ordem_servico_id', None)
+                    evento.maquina_id = documento.get('maquina_id', None)
+                    evento.operador_id = documento.get('operador_id', None)
+                    evento.empresa_id = documento.get('empresa_id', None)
+                    evento.grupo_id = documento.get('grupo_id', None)
+                    evento.ocioso = documento.get('ocioso', None)
+                    info_maquina['manutencao_eventos'].append(evento)
+
+
+                # busca por tempo de manutenção dia
+
                 pipeline = [
                     {
                         "$match": {
@@ -170,10 +226,53 @@ class EventoService:
                     info_maquina["qtd_manutencao_dia"] = result['count']
                     info_maquina["tempo_total_manutencao_dia"] = result['duracao_total']
 
+                # busca tempo total de eventos do dia
+                pipeline = [
+                    {
+                        "$match": {
+                            "maquina_id": maquina_id,
+                            "data_inicio": {
+                                "$gte": datetime.datetime(year=now.year, month=now.month, day=1),
+                                "$lt": datetime.datetime(year=2024,
+                                                         month=(now.month + 1 if now.month <= 12 else 1),
+                                                         day=now.day)
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": '$nome',
+                            'count': {'$sum': 1},
+                            "duracao_total": {"$sum": "$duracao"}
+                        }
+                    }
+                ]
+
+                async for result in client.agro_control.eventos.aggregate(pipeline):
+                    info_maquina["tempo_total_todos_eventos"] = result['duracao_total']
+
             except Exception as ex:
                 raise EventError(ex)
 
         return info_maquina
+
+
+    async def busca_operador_conectado(self, maquina_id: int):
+        result = []
+
+        async with Mongo() as client:
+            try:
+                query = {"maquina_id": int(maquina_id)}
+
+                async for documento in client.agro_control.operadores_maquinas.find(query):
+                    result = documento
+
+                if result:
+                    return result["operador_id"]
+
+            except Exception as ex:
+                raise EventError(ex)
+        return
     
     async def eventos_clima_por_dia(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
         info_clima = []

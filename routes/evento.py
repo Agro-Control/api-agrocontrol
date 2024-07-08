@@ -48,7 +48,7 @@ async def insere_evento(evento: Evento) -> JSONResponse:
         }
 
         ordem_service = OrdemService()
-        ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, ev.get(evento.nome))
+        await ordem_service.altera_status_ordem_servico(evento.ordem_servico_id, ev.get(evento.nome))
 
     return JSONResponse(status_code=201, content={"id": str(evento_inserido_id)})
 
