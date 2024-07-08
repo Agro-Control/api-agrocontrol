@@ -129,6 +129,34 @@ class DashBoardsService:
 
                 params = []
 
+                sql = """SELECT
+                                count(*) ordens_totais
+                            FROM ordem_servico os
+                            INNER JOIN unidade u ON os.unidade_id = u.id 
+                            INNER JOIN empresa e ON e.id  = os.empresa_id
+                """
+                if grupo_id:
+                    sql += " AND e.grupo_id = %s"
+                    params.append(grupo_id)
+
+                if empresa_id:
+                    sql += " AND e.id = %s"
+                    params.append(empresa_id)
+
+                if unidade_id:
+                    sql += " AND U.ID = %s"
+                    params.append(unidade_id)
+
+                await cursor.execute(sql, params, prepare=True)
+
+                result = await cursor.fetchone()
+
+                if not result:
+                    dash.update({"ordens_totais": 0, "ordens_ativas": 0})
+                    return dash
+
+                dash.update(result)
+
                 sql = """
                         SELECT 
                             count(*) ordens_ativas
@@ -155,9 +183,9 @@ class DashBoardsService:
                 result = await cursor.fetchone()
 
                 if not result:
-                    return {}
+                    return dash
 
-                dash = result
+                dash.update(result)
 
         return dash
 
