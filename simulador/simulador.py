@@ -56,9 +56,10 @@ class Talhao:
 
 
 class Ordem:
-    def __init__(self, id, maquina, operador_ativo, status, data_previsao_fim):
+    def __init__(self, id, maquina, talhao, operador_ativo, status, data_previsao_fim):
         self.id_ = id
         self.maquina = maquina
+        self.talhao = talhao
         self.operador = operador_ativo
         self.status = status
         self.data_previsao_fim = data_previsao_fim
@@ -215,7 +216,7 @@ class Simulator(threading.Thread):
                 "maquina_id": self.ordem.maquina.id_,
                 "empresa_id": self.ordem.operador.empresa_id,
                 "grupo_id": self.ordem.operador.grupo_id,
-                "talhao_id": self.ordem.talhao.id,
+                "talhao_id": self.ordem.talhao.id_,
                 "nome": event.name,
                 "data_inicio": event.data_inicio.isoformat(),
                 "data_fim": event.data_fim.isoformat() if event.data_fim else None
@@ -344,8 +345,8 @@ class Main:
                                 simulador.runnig = False
                                 del self.ordens_ativas[_id]
 
-            except:
-                print("Erro consulta ordem simulador", flush=True)
+            except Exception as ex:
+                print("Erro consulta ordem simulador", ex, flush=True)
 
             for _id, ordem in self.ordens_ativas.copy().items():
                 if not ordem.is_alive():
