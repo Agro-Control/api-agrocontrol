@@ -272,7 +272,7 @@ class EventoService:
             except Exception as ex:
                 raise EventError(ex)
         return
-    
+    ##Somente visualizacao, todos os eventos
     async def eventos_clima_por_dia(self, talhao_id: int, data_inicio: datetime, data_fim: datetime):
         info_clima = []
         logger.info(f'Iniciando processamento para talhão {talhao_id} de {data_inicio} até {data_fim}')
