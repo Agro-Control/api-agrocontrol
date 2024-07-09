@@ -90,7 +90,7 @@ class EventoService:
             "tempo_total_manutencao_mes": 0,
             "qtd_manutencao_dia": 0,
             "tempo_total_manutencao_dia": 0,
-            "tempo_total_todos_eventos:": 0,
+            "tempo_total_todos_eventos": 0,
         }
 
         async with Mongo() as client:
@@ -232,17 +232,16 @@ class EventoService:
                         "$match": {
                             "maquina_id": maquina_id,
                             "data_inicio": {
-                                "$gte": datetime.datetime(year=now.year, month=now.month, day=1),
-                                "$lt": datetime.datetime(year=2024,
-                                                         month=(now.month + 1 if now.month <= 12 else 1),
-                                                         day=now.day)
+                                "$gte": datetime.datetime(year=now.year, month=now.month, day=now.day),
+                                "$lt": datetime.datetime(year=2024, month=now.month, day=now.day,
+                                                          hour=23,
+                                                          minute=59, second=59)
                             }
                         }
                     },
                     {
                         "$group": {
-                            "_id": '$nome',
-                            'count': {'$sum': 1},
+                            "_id": None,
                             "duracao_total": {"$sum": "$duracao"}
                         }
                     }
