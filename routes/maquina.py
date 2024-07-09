@@ -78,7 +78,7 @@ async def atualizar_maquina(maquina: Maquina, token: str = Depends(verify_token(
 
 
 @router.get("/maquinas/info/{maquina_id}")
-async def busca_info_maquina(maquina_id: int, token: str = Depends(verify_token(["G"]))):
+async def busca_info_maquina(maquina_id: int):
     if not maquina_id:
         return JSONResponse(status_code=400, content={"detail": "Requisição inválida"})
 
@@ -95,6 +95,8 @@ async def busca_info_maquina(maquina_id: int, token: str = Depends(verify_token(
         usuario_service = UsuarioService()
         operador_conectado = await usuario_service.buscar_operador(operador_conectado)
         response["operador_conectado"] = operador_conectado
+    else:
+        response["operador_conectado"] = None
 
     return response
 
