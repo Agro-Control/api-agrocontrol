@@ -21,7 +21,7 @@ async def operadores_alocados(grupo_id: int = Query(None, description="Grupo"),
 
     if not response:
 
-        return JSONResponse(status_code=403, content={"error": "Dash não construido"})
+        return JSONResponse(status_code=404, content={"error": "Dash não construido"})
 
     return response
 
@@ -39,7 +39,7 @@ async def maquinas_alocados(
 
     if not response:
 
-        return JSONResponse(status_code=403, content={"error": "Dash não construido"})
+        return JSONResponse(status_code=404, content={"error": "Dash não construido"})
 
     return response
 
@@ -56,7 +56,7 @@ async def ordem_ativas(
 
     if not response:
 
-        return JSONResponse(status_code=403, content={"error": "Dash não construido"})
+        return JSONResponse(status_code=404, content={"error": "Dash não construido"})
 
     return response
 
@@ -72,7 +72,7 @@ async def ordem_status(
     response = await dash_service.dash_ordem_status(grupo_id=grupo_id, empresa_id=empresa_id, unidade_id=unidade_id)
 
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Dash não construido"})
+        return JSONResponse(status_code=404, content={"error": "Dash não construido"})
 
     return response
 
@@ -88,7 +88,7 @@ async def ordem_eventos(ordem_id: int = Query(None, description="Ordem da Empres
     response = await dash_service.dash_eventos_ordem(ordem_id)
 
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Sem eventos para a ordem"})
+        return JSONResponse(status_code=404, content={"error": "Sem eventos para a ordem"})
 
     return response
 
@@ -107,7 +107,7 @@ async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta d
     response = await dash_service.dash_manutencao_maquina(grupo_id=grupo_id, empresa_id=empresa_id, maquina_id=maquina_id)
 
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Sem eventos"})
+        return JSONResponse(status_code=404, content={"error": "Sem eventos"})
 
     return response
 
@@ -125,7 +125,7 @@ async def ordem_status(grupo_id: int = Query(None, description="Grupo consulta d
     response = await dash_service.dash_tempo_operacao_producao(grupo_id=grupo_id, empresa_id=empresa_id, maquina_id=maquina_id)
 
     if not response:
-        return JSONResponse(status_code=403, content={"error": "Sem operacional"})
+        return JSONResponse(status_code=404, content={"error": "Sem operacional"})
 
     return response
 
