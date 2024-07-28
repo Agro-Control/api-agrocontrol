@@ -30,6 +30,7 @@ Para executar este projeto localmente, faça no seu terminal: ```uvicorn app:app
 Para o modo de desenvolvimento, adicione ```--reload```
 
 Obs: uvicorn é suportado apenas em distribuições Linux/Mac. Para executar no Windows, por favor use Docker.
+Obs: para executar a funcionalidade de registro de usuarios é necessario registar um email e token, dentro de /service/jw_service.py para envio da senha de login
 
 ## Documentation
 
