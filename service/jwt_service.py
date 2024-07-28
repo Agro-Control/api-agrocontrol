@@ -26,12 +26,12 @@ def gerar_senha_aleatoria(length=12):
 def enviar_email(destinatario, senha):
     msg = EmailMessage()
     msg['Subject'] = "AgroControl - Sua nova senha"
-    msg['From'] = "vinie.antuness@gmail.com"
+    msg['From'] = "" # adicione email
     msg['To'] = destinatario
     msg.set_content(f"Sua senha temporária é: {senha}")
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login('vinie.antuness@gmail.com', 'ahkgbjikxyxzcscm')
+        smtp.login('', '') # adicione email e token
         smtp.send_message(msg)
 
 
